@@ -22,6 +22,7 @@
   "submit": {
     "production": {
       "ios": {
+        "ascAppId": "6793329838",
         "ascApiKeyPath": "/home/racescanserver/Downloads/AuthKey_6D4ACN7D5U.p8",
         "ascApiKeyId": "6D4ACN7D5U",
         "ascApiKeyIssuerId": "c0d30d65-1d8e-4838-ab7d-427fff401e53"
