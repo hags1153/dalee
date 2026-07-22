@@ -2,7 +2,7 @@
   "expo": {
     "name": "Dalee",
     "slug": "dalee",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -17,7 +17,7 @@
     "android": {
       "package": "com.racescan.dalee",
       "adaptiveIcon": {
-        "backgroundColor": "#538d4e",
+        "backgroundColor": "#7C5CFF",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
