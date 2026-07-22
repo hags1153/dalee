@@ -3,12 +3,12 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
 import { ScreenBG, Header, GradientButton, GhostButton, haptic } from "../ui";
 import { palette as C, games, radius } from "../theme";
 import { pick, shuffle } from "../daily";
+import { blitzWordPts as pts } from "../scoring";
 import { BLITZ_BASES, BLITZ_DICT } from "../wordbank";
 import { GameProps } from "./types";
 
 const G = games.blitz;
 const DURATION = 60;
-const pts = (len: number) => (len >= 7 ? 10 : len === 6 ? 6 : len === 5 ? 4 : len === 4 ? 2 : 1);
 
 export default function Blitz({ seed, onDone, onClose }: GameProps) {
   const letters = useMemo(() => shuffle(pick(BLITZ_BASES, seed).split(""), seed), [seed]);
@@ -26,7 +26,7 @@ export default function Blitz({ seed, onDone, onClose }: GameProps) {
   useEffect(() => {
     if (time <= 0 && !finished.current) {
       finished.current = true; haptic.success();
-      onDone({ done: true, won: found.length > 0, score: Math.min(120, score) });
+      onDone({ done: true, won: found.length > 0, score });
     }
   }, [time, score, found.length, onDone]);
 

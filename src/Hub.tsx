@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScreenBG, GradientButton, haptic } from "./ui";
 import { palette as C, games, gradients, radius, font, shadow, CIRCUIT, GameKey } from "./theme";
-import { DayState, Stats, circuitProgress, circuitScore, circuitComplete } from "./storage";
+import { DayState, Stats, circuitProgress, circuitComplete, dayTotal } from "./storage";
+import { fmt } from "./scoring";
 import { prettyDate } from "./daily";
 
 export default function Hub({ day, dayState, stats, onPlay, onSignIn }: {
@@ -12,7 +13,7 @@ export default function Hub({ day, dayState, stats, onPlay, onSignIn }: {
 }) {
   const progress = circuitProgress(dayState);
   const done = circuitComplete(dayState);
-  const score = circuitScore(dayState);
+  const total = dayTotal(dayState);
   const next = CIRCUIT.find((k) => !dayState.results[k]?.done);
 
   return (
@@ -27,19 +28,31 @@ export default function Hub({ day, dayState, stats, onPlay, onSignIn }: {
           <Pressable onPress={() => { haptic.tap(); onSignIn(); }} style={styles.avatar}><Text style={styles.avatarT}>👤</Text></Pressable>
         </View>
 
+        {/* score showcase */}
+        <LinearGradient colors={gradients.score as any} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.scoreCard, shadow.glow(C.accent)]}>
+          <Text style={styles.scoreLabel}>{done ? "TODAY — COMPLETE 🎉" : "TODAY'S SCORE"}</Text>
+          <Text style={styles.scoreBig}>{fmt(total)}</Text>
+          <View style={styles.pips}>
+            {CIRCUIT.map((k) => (
+              <View key={k} style={[styles.pip, dayState.results[k]?.done && styles.pipOn]} />
+            ))}
+          </View>
+          <Text style={styles.scoreSub}>{done ? `+${fmt(750)} circuit bonus included` : `${progress} of 5 games done`}</Text>
+        </LinearGradient>
+
         {/* stat strip */}
         <View style={styles.stats}>
           <Stat label="STREAK" value={`${stats.streak}🔥`} />
           <View style={styles.divider} />
-          <Stat label="TODAY" value={done ? `${score}` : `${progress}/5`} />
+          <Stat label="BEST DAY" value={fmt(stats.bestDay)} />
           <View style={styles.divider} />
-          <Stat label="BEST" value={`${stats.maxStreak}`} />
+          <Stat label="TOTAL" value={fmt(stats.totalScore)} />
         </View>
 
         {/* circuit header */}
         <View style={styles.circHead}>
           <Text style={styles.h2}>Today's Circuit</Text>
-          <Text style={styles.est}>{done ? "Complete 🎉" : "~25 min · 5 games"}</Text>
+          <Text style={styles.est}>{done ? "Come back tomorrow" : "~25 min · 5 games"}</Text>
         </View>
 
         {/* game cards */}
@@ -48,7 +61,7 @@ export default function Hub({ day, dayState, stats, onPlay, onSignIn }: {
             const g = games[k]; const r = dayState.results[k];
             return (
               <Pressable key={k} onPress={() => { haptic.tap("medium"); onPlay(k); }}>
-                <View style={[styles.card, shadow.card, r?.done && { borderColor: C.correct + "55" }]}>
+                <View style={[styles.card, shadow.card, r?.done && { borderColor: g.hue + "66" }]}>
                   <LinearGradient colors={g.grad as any} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.badge}>
                     <Text style={styles.badgeT}>{g.icon}</Text>
                   </LinearGradient>
@@ -57,7 +70,7 @@ export default function Hub({ day, dayState, stats, onPlay, onSignIn }: {
                     <Text style={styles.cardTag}>{g.tag}</Text>
                   </View>
                   {r?.done
-                    ? <View style={styles.scorePill}><Text style={styles.scorePillT}>{r.won ? `+${r.score}` : "—"}</Text></View>
+                    ? <View style={[styles.scorePill, { backgroundColor: g.hue + "22" }]}><Text style={[styles.scorePillT, { color: g.hue }]}>{r.won ? `+${fmt(r.score)}` : "—"}</Text></View>
                     : <Text style={styles.chev}>›</Text>}
                 </View>
               </Pressable>
@@ -68,7 +81,7 @@ export default function Hub({ day, dayState, stats, onPlay, onSignIn }: {
         {/* CTA */}
         <View style={{ marginTop: 20 }}>
           {done
-            ? <View style={styles.doneCard}><Text style={styles.doneT}>Circuit complete!</Text><Text style={styles.doneSub}>You scored {score} today · streak {stats.streak}🔥</Text></View>
+            ? <View style={styles.doneCard}><Text style={styles.doneT}>Circuit complete!</Text><Text style={styles.doneSub}>You scored {fmt(total)} today · {stats.streak}🔥 day streak</Text></View>
             : <GradientButton label={progress === 0 ? "Start today's circuit" : `Continue → ${games[next!].name}`} colors={gradients.brand as any} onPress={() => next && onPlay(next)} />}
         </View>
       </ScrollView>
@@ -87,10 +100,20 @@ const styles = StyleSheet.create({
   date: { color: C.textFaint, ...font.label, marginTop: 2 },
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.surface, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: C.hairline },
   avatarT: { fontSize: 20 },
-  stats: { flexDirection: "row", backgroundColor: C.surface, borderRadius: radius.lg, paddingVertical: 16, marginTop: 20, borderWidth: 1, borderColor: C.hairline },
+
+  scoreCard: { borderRadius: radius.xl, paddingVertical: 22, paddingHorizontal: 20, marginTop: 20, alignItems: "center" },
+  scoreLabel: { color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: "800", letterSpacing: 1.5 },
+  scoreBig: { color: "#fff", fontSize: 56, fontWeight: "900", letterSpacing: 1, marginTop: 2 },
+  pips: { flexDirection: "row", gap: 8, marginTop: 8 },
+  pip: { width: 26, height: 6, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.28)" },
+  pipOn: { backgroundColor: "#fff" },
+  scoreSub: { color: "rgba(255,255,255,0.9)", fontSize: 13, fontWeight: "700", marginTop: 12 },
+
+  stats: { flexDirection: "row", backgroundColor: C.surface, borderRadius: radius.lg, paddingVertical: 16, marginTop: 16, borderWidth: 1, borderColor: C.hairline },
   divider: { width: 1, backgroundColor: C.hairline },
-  statV: { color: C.text, fontSize: 22, fontWeight: "800" },
+  statV: { color: C.text, fontSize: 20, fontWeight: "800" },
   statL: { color: C.textFaint, fontSize: 11, fontWeight: "700", letterSpacing: 1, marginTop: 3 },
+
   circHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 26, marginBottom: 14 },
   h2: { color: C.text, ...font.h1 },
   est: { color: C.textFaint, ...font.label },
@@ -99,8 +122,8 @@ const styles = StyleSheet.create({
   badgeT: { fontSize: 26 },
   cardTitle: { color: C.text, ...font.h2 },
   cardTag: { color: C.textFaint, ...font.label, marginTop: 2 },
-  scorePill: { backgroundColor: C.correct + "22", paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill },
-  scorePillT: { color: C.correct, fontWeight: "800" },
+  scorePill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill },
+  scorePillT: { fontWeight: "800" },
   chev: { color: C.textFaint, fontSize: 28, fontWeight: "300", paddingRight: 4 },
   doneCard: { backgroundColor: C.surface, borderRadius: radius.lg, padding: 20, alignItems: "center", borderWidth: 1, borderColor: C.correct + "55" },
   doneT: { color: C.correct, fontSize: 20, fontWeight: "800" },

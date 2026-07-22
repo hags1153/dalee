@@ -73,13 +73,14 @@ export function ProgressDots({ total, done, color }: { total: number; done: numb
   );
 }
 
-// On-screen keyboard shared by Wordle / Missing
-const ROWS = ["QWERTYUIOP", "ASDFGHJKL", "↵ZXCVBNM⌫"];
-export function Keyboard({ onKey, statuses }: { onKey: (k: string) => void; statuses?: Record<string, "correct" | "present" | "absent"> }) {
+// On-screen keyboard shared by Wordle / Ladder / Missing.
+// showEnter=false hides the ↵ key so the game can use a dedicated SUBMIT button.
+export function Keyboard({ onKey, statuses, showEnter = true }: { onKey: (k: string) => void; statuses?: Record<string, "correct" | "present" | "absent">; showEnter?: boolean }) {
   const col = (s?: string) => s === "correct" ? C.correct : s === "present" ? C.present : s === "absent" ? C.absent : C.surfaceHi;
+  const rows = ["QWERTYUIOP", "ASDFGHJKL", `${showEnter ? "↵" : ""}ZXCVBNM⌫`];
   return (
     <View style={{ gap: 7, paddingHorizontal: 4 }}>
-      {ROWS.map((row, i) => (
+      {rows.map((row, i) => (
         <View key={i} style={{ flexDirection: "row", justifyContent: "center", gap: 5 }}>
           {row.split("").map((k) => {
             const wide = k === "↵" || k === "⌫";

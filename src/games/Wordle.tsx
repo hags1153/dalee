@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated, Dimensions } from "react-native";
 import { ScreenBG, Header, Keyboard, GradientButton, haptic } from "../ui";
 import { palette as C, games, radius } from "../theme";
 import { pick } from "../daily";
+import { wordleScore } from "../scoring";
 import { WORDLE_ANSWERS, DICT5 } from "../wordbank";
 import { GameProps } from "./types";
 
@@ -29,6 +30,7 @@ export default function Wordle({ seed, onDone, onClose }: GameProps) {
   const [cur, setCur] = useState("");
   const [state, setState] = useState<"play" | "won" | "lost">("play");
   const [toast, setToast] = useState("");
+  const [win, setWin] = useState(false);
   const shake = useRef(new Animated.Value(0)).current;
 
   const keyStatuses = useMemo(() => {
@@ -37,7 +39,7 @@ export default function Wordle({ seed, onDone, onClose }: GameProps) {
     return m as Record<string, "correct" | "present" | "absent">;
   }, [guesses, evals]);
 
-  const flash = (m: string) => { setToast(m); setTimeout(() => setToast(""), 1300); };
+  const flash = (m: string, w = false) => { setWin(w); setToast(m); setTimeout(() => setToast(""), 1300); };
   const doShake = () => { haptic.error(); Animated.sequence([-8, 8, -6, 6, 0].map((v) => Animated.timing(shake, { toValue: v, duration: 45, useNativeDriver: true }))).start(); };
 
   const submit = useCallback(() => {
@@ -49,7 +51,7 @@ export default function Wordle({ seed, onDone, onClose }: GameProps) {
     setGuesses(ng); setEvals(ne); setCur("");
     const won = ev.every((s) => s === "correct");
     const lost = !won && ng.length >= MAX;
-    if (won) { haptic.success(); const score = Math.max(30, 105 - ng.length * 15); setState("won"); flash(`Solved! +${score}`); setTimeout(() => onDone({ done: true, won: true, score, guesses: ng.length }), 1100); }
+    if (won) { haptic.success(); const score = wordleScore(ng.length, true); setState("won"); flash(`Solved!  +${score}`, true); setTimeout(() => onDone({ done: true, won: true, score, guesses: ng.length }), 1200); }
     else if (lost) { haptic.error(); setState("lost"); flash(answer); setTimeout(() => onDone({ done: true, won: false, score: 0, guesses: MAX }), 1400); }
   }, [state, cur, answer, guesses, evals, onDone]);
 
@@ -69,23 +71,30 @@ export default function Wordle({ seed, onDone, onClose }: GameProps) {
     <ScreenBG>
       <View style={styles.wrap}>
         <Header title="Wordle" subtitle="Guess the 5-letter word" onClose={onClose} />
-        {!!toast && <View style={styles.toast}><Text style={styles.toastT}>{toast}</Text></View>}
+        {!!toast && <View style={[styles.toast, win && styles.toastWin]}><Text style={[styles.toastT, win && styles.toastTWin]}>{toast}</Text></View>}
         <View style={styles.grid}>
-          {rows.map((row, r) => (
-            <Animated.View key={r} style={[styles.row, r === guesses.length ? { transform: [{ translateX: shake }] } : null]}>
-              {row.l.map((ch, i) => {
-                const s = row.e[i]; const filled = ch.trim().length > 0;
-                return (
-                  <View key={i} style={[styles.tile, { backgroundColor: s ? col(s) : "transparent", borderColor: s ? col(s) : filled ? C.textFaint : C.hairline }]}>
-                    <Text style={styles.tileT}>{ch.trim()}</Text>
-                  </View>
-                );
-              })}
-            </Animated.View>
-          ))}
+          {rows.map((row, r) => {
+            const active = r === guesses.length && state === "play";
+            return (
+              <Animated.View key={r} style={[styles.row, active ? { transform: [{ translateX: shake }] } : null]}>
+                {row.l.map((ch, i) => {
+                  const s = row.e[i]; const filled = ch.trim().length > 0;
+                  return (
+                    <View key={i} style={[styles.tile,
+                      s ? { backgroundColor: col(s), borderColor: col(s) }
+                        : filled ? { backgroundColor: C.surfaceHi, borderColor: C.accent }
+                        : { backgroundColor: "transparent", borderColor: C.hairline }]}>
+                      <Text style={styles.tileT}>{ch.trim()}</Text>
+                    </View>
+                  );
+                })}
+              </Animated.View>
+            );
+          })}
         </View>
-        <View style={{ marginTop: "auto", gap: 14, paddingBottom: 14 }}>
-          <Keyboard onKey={onKey} statuses={keyStatuses} />
+        <View style={{ marginTop: "auto", gap: 12, paddingBottom: 14 }}>
+          <GradientButton label="SUBMIT" colors={G.grad as any} onPress={submit} disabled={cur.length !== LEN || state !== "play"} />
+          <Keyboard onKey={onKey} statuses={keyStatuses} showEnter={false} />
         </View>
       </View>
     </ScreenBG>
@@ -97,7 +106,9 @@ const styles = StyleSheet.create({
   grid: { alignItems: "center", gap: 7, marginTop: 8 },
   row: { flexDirection: "row", gap: 7 },
   tile: { width: TILE, height: TILE, borderWidth: 2, borderRadius: radius.sm, alignItems: "center", justifyContent: "center" },
-  tileT: { color: "#fff", fontSize: TILE * 0.5, fontWeight: "800" },
+  tileT: { color: "#fff", fontSize: TILE * 0.5, fontWeight: "800", textAlign: "center", includeFontPadding: false },
   toast: { position: "absolute", top: 96, alignSelf: "center", zIndex: 10, backgroundColor: C.text, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
   toastT: { color: C.bg0, fontWeight: "800" },
+  toastWin: { backgroundColor: C.correct },
+  toastTWin: { color: "#fff", fontSize: 15 },
 });

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated, ScrollView } from "react-native";
 import { ScreenBG, Header, Keyboard, GradientButton, haptic } from "../ui";
 import { palette as C, games, radius } from "../theme";
 import { pick } from "../daily";
+import { ladderScore } from "../scoring";
 import { LADDERS, DICT4 } from "../wordbank";
 import { GameProps } from "./types";
 
@@ -16,9 +17,10 @@ export default function Ladder({ seed, onDone, onClose }: GameProps) {
   const [chain, setChain] = useState<string[]>([start]);
   const [cur, setCur] = useState("");
   const [toast, setToast] = useState("");
+  const [win, setWin] = useState(false);
   const [state, setState] = useState<"play" | "won">("play");
   const shake = useRef(new Animated.Value(0)).current;
-  const flash = (m: string) => { setToast(m); setTimeout(() => setToast(""), 1300); };
+  const flash = (m: string, w = false) => { setWin(w); setToast(m); setTimeout(() => setToast(""), 1300); };
   const doShake = () => { haptic.error(); Animated.sequence([-8, 8, -6, 6, 0].map((v) => Animated.timing(shake, { toValue: v, duration: 45, useNativeDriver: true }))).start(); };
 
   const submit = () => {
@@ -30,20 +32,24 @@ export default function Ladder({ seed, onDone, onClose }: GameProps) {
     if (!DICT4.has(w.toLowerCase())) { flash("Not a word"); return doShake(); }
     if (chain.includes(w)) { flash("Already used"); return doShake(); }
     const nc = [...chain, w]; setChain(nc); setCur(""); haptic.tap("medium");
-    if (w === end) { haptic.success(); setState("won"); const steps = nc.length - 1; const score = Math.max(40, 100 - steps * 6); flash(`Solved! +${score}`); setTimeout(() => onDone({ done: true, won: true, score }), 1000); }
+    if (w === end) { haptic.success(); setState("won"); const steps = nc.length - 1; const score = ladderScore(steps); flash(`Solved in ${steps}!  +${score}`, true); setTimeout(() => onDone({ done: true, won: true, score }), 1100); }
   };
   const onKey = (k: string) => { if (state !== "play") return; if (k === "↵") return submit(); if (k === "⌫") return setCur((c) => c.slice(0, -1)); if (/[A-Z]/.test(k) && cur.length < 4) setCur((c) => c + k); };
 
   const Word = ({ w, tone }: { w: string; tone: "start" | "end" | "step" | "cur" }) => (
     <View style={styles.wrow}>
-      {w.padEnd(4).split("").map((ch, i) => (
-        <View key={i} style={[styles.cell,
-          tone === "end" ? { borderColor: C.correct } :
-          tone === "start" ? { backgroundColor: C.surfaceHi, borderColor: "transparent" } :
-          tone === "cur" ? { borderColor: G.hue } : { backgroundColor: G.hue, borderColor: G.hue }]}>
-          <Text style={styles.cellT}>{ch.trim()}</Text>
-        </View>
-      ))}
+      {w.padEnd(4).split("").map((ch, i) => {
+        const filled = ch.trim().length > 0;
+        const st = tone === "end" ? { borderColor: C.correct, backgroundColor: "transparent" }
+          : tone === "start" ? { backgroundColor: C.surfaceHi, borderColor: "transparent" }
+          : tone === "cur" ? { borderColor: G.hue, backgroundColor: filled ? C.surfaceHi : "transparent" }
+          : { backgroundColor: G.hue, borderColor: G.hue };
+        return (
+          <View key={i} style={[styles.cell, st]}>
+            <Text style={styles.cellT}>{ch.trim()}</Text>
+          </View>
+        );
+      })}
     </View>
   );
 
@@ -52,13 +58,16 @@ export default function Ladder({ seed, onDone, onClose }: GameProps) {
       <View style={styles.wrap}>
         <Header title="Ladder" subtitle="Change one letter at a time" onClose={onClose} />
         <View style={styles.goal}><Text style={styles.goalT}>{start}</Text><Text style={styles.arrow}>→</Text><Text style={[styles.goalT, { color: C.correct }]}>{end}</Text></View>
-        {!!toast && <View style={styles.toast}><Text style={styles.toastT}>{toast}</Text></View>}
+        {!!toast && <View style={[styles.toast, win && styles.toastWin]}><Text style={[styles.toastT, win && styles.toastTWin]}>{toast}</Text></View>}
         <ScrollView contentContainerStyle={{ alignItems: "center", gap: 6, paddingVertical: 10 }} style={{ flex: 1 }}>
           {chain.map((w, i) => <Word key={i} w={w} tone={i === 0 ? "start" : w === end ? "end" : "step"} />)}
           {state === "play" && <Animated.View style={{ transform: [{ translateX: shake }] }}><Word w={cur} tone="cur" /></Animated.View>}
           <Text style={styles.match}>{state === "play" ? `${matchCount((cur || chain[chain.length - 1]), end)}/4 letters match the target` : "🏆 You reached the target!"}</Text>
         </ScrollView>
-        <View style={{ gap: 12, paddingBottom: 14 }}><Keyboard onKey={onKey} /></View>
+        <View style={{ gap: 12, paddingBottom: 14 }}>
+          <GradientButton label="SUBMIT" colors={G.grad as any} onPress={submit} disabled={cur.length !== 4 || state !== "play"} />
+          <Keyboard onKey={onKey} showEnter={false} />
+        </View>
       </View>
     </ScreenBG>
   );
@@ -71,8 +80,10 @@ const styles = StyleSheet.create({
   arrow: { color: C.textFaint, fontSize: 22 },
   wrow: { flexDirection: "row", gap: 6 },
   cell: { width: 46, height: 50, borderRadius: radius.sm, borderWidth: 2, alignItems: "center", justifyContent: "center" },
-  cellT: { color: "#fff", fontSize: 24, fontWeight: "800" },
+  cellT: { color: "#fff", fontSize: 24, fontWeight: "800", textAlign: "center", includeFontPadding: false },
   match: { color: C.textFaint, marginTop: 10, fontWeight: "600" },
   toast: { position: "absolute", top: 108, alignSelf: "center", zIndex: 10, backgroundColor: C.text, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
   toastT: { color: C.bg0, fontWeight: "800" },
+  toastWin: { backgroundColor: C.correct },
+  toastTWin: { color: "#fff" },
 });

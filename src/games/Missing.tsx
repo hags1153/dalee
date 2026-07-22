@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated } from "react-native";
 import { ScreenBG, Header, Keyboard, GradientButton, GhostButton, haptic } from "../ui";
 import { palette as C, games, radius } from "../theme";
 import { pick, seededRng } from "../daily";
+import { missingScore } from "../scoring";
 import { MISSING } from "../wordbank";
 import { GameProps } from "./types";
 
@@ -23,6 +24,7 @@ export default function Missing({ seed, onDone, onClose }: GameProps) {
   const [wrong, setWrong] = useState(0);
   const [hints, setHints] = useState(0);
   const [state, setState] = useState<"play" | "won">("play");
+  const [toast, setToast] = useState("");
   const shake = useRef(new Animated.Value(0)).current;
   const doShake = () => { haptic.error(); Animated.sequence([-8, 8, -6, 6, 0].map((v) => Animated.timing(shake, { toValue: v, duration: 45, useNativeDriver: true }))).start(); };
 
@@ -44,7 +46,7 @@ export default function Missing({ seed, onDone, onClose }: GameProps) {
   const submit = () => {
     if (state !== "play" || fills.length !== blanks.length) return;
     const ok = blanks.every((p, k) => fills[k] === word[p]);
-    if (ok) { haptic.success(); setState("won"); const score = Math.max(25, 100 - wrong * 15 - hints * 25); setTimeout(() => onDone({ done: true, won: true, score }), 850); }
+    if (ok) { haptic.success(); setState("won"); const score = missingScore(wrong, hints); setToast(`Got it!  +${score}`); setTimeout(() => onDone({ done: true, won: true, score }), 1050); }
     else { setWrong((w) => w + 1); doShake(); setFills([]); }
   };
 
@@ -52,6 +54,7 @@ export default function Missing({ seed, onDone, onClose }: GameProps) {
     <ScreenBG>
       <View style={styles.wrap}>
         <Header title="Missing" subtitle="Fill in the blanks" onClose={onClose} />
+        {!!toast && <View style={styles.toast}><Text style={styles.toastT}>{toast}</Text></View>}
         <View style={styles.hintCard}><Text style={styles.hintT}>💡 {puzzle.hint}</Text></View>
         <Animated.View style={[styles.word, { transform: [{ translateX: shake }] }]}>
           {display.map((d, i) => (
@@ -65,7 +68,7 @@ export default function Missing({ seed, onDone, onClose }: GameProps) {
             <GhostButton label="💡 Hint" onPress={hint} style={{ flex: 1 }} />
             <GradientButton label="Submit" colors={G.grad as any} onPress={submit} disabled={fills.length !== blanks.length} style={{ flex: 1 }} />
           </View>
-          <Keyboard onKey={onKey} />
+          <Keyboard onKey={onKey} showEnter={false} />
         </View>
       </View>
     </ScreenBG>
@@ -74,6 +77,8 @@ export default function Missing({ seed, onDone, onClose }: GameProps) {
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 50 },
+  toast: { position: "absolute", top: 96, alignSelf: "center", zIndex: 10, backgroundColor: C.correct, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
+  toastT: { color: "#fff", fontWeight: "800" },
   hintCard: { backgroundColor: C.surface, borderRadius: radius.md, padding: 16, marginTop: 16, borderWidth: 1, borderColor: C.hairline },
   hintT: { color: C.text, fontSize: 16, fontWeight: "600", textAlign: "center" },
   word: { flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 40 },

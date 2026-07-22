@@ -35,6 +35,7 @@ export const gradients = {
   app: ["#0B0C10", "#12131C", "#0B0C10"],
   brand: ["#7C5CFF", "#5B8DEF"],
   gold: ["#F5B942", "#F59E0B"],
+  score: ["#7C5CFF", "#9B86FF", "#5B8DEF"],
 } as const;
 
 export const radius = { sm: 10, md: 16, lg: 22, xl: 28, pill: 999 } as const;

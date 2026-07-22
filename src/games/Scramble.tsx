@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, Animated } from "react-native";
 import { ScreenBG, Header, GradientButton, GhostButton, haptic } from "../ui";
 import { palette as C, games, radius } from "../theme";
 import { pick, shuffle } from "../daily";
+import { scrambleScore } from "../scoring";
 import { SCRAMBLE_WORDS } from "../wordbank";
 import { GameProps } from "./types";
 
@@ -19,6 +20,7 @@ export default function Scramble({ seed, onDone, onClose }: GameProps) {
   const [wrong, setWrong] = useState(0);
   const [hints, setHints] = useState(0);
   const [state, setState] = useState<"play" | "won">("play");
+  const [toast, setToast] = useState("");
   const shake = useRef(new Animated.Value(0)).current;
 
   const usedSet = new Set(placed);
@@ -39,8 +41,9 @@ export default function Scramble({ seed, onDone, onClose }: GameProps) {
     if (state !== "play" || built.length !== answer.length) return;
     if (built === answer) {
       haptic.success(); setState("won");
-      const score = Math.max(25, 100 - wrong * 15 - hints * 20);
-      setTimeout(() => onDone({ done: true, won: true, score }), 850);
+      const score = scrambleScore(wrong, hints);
+      setToast(`Nice!  +${score}`);
+      setTimeout(() => onDone({ done: true, won: true, score }), 1050);
     } else { setWrong((w) => w + 1); doShake(); }
   };
 
@@ -48,6 +51,7 @@ export default function Scramble({ seed, onDone, onClose }: GameProps) {
     <ScreenBG>
       <View style={styles.wrap}>
         <Header title="Scramble" subtitle="Unscramble the word" onClose={onClose} />
+        {!!toast && <View style={styles.toast}><Text style={styles.toastT}>{toast}</Text></View>}
         <Text style={styles.hint}>{answer.length} letters</Text>
 
         <Animated.View style={[styles.slots, { transform: [{ translateX: shake }] }]}>
@@ -81,6 +85,8 @@ export default function Scramble({ seed, onDone, onClose }: GameProps) {
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 50 },
+  toast: { position: "absolute", top: 96, alignSelf: "center", zIndex: 10, backgroundColor: C.correct, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
+  toastT: { color: "#fff", fontWeight: "800" },
   hint: { color: C.textFaint, textAlign: "center", marginTop: 8, fontWeight: "600" },
   slots: { flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 30 },
   slot: { width: 54, height: 62, borderRadius: radius.sm, borderWidth: 2, alignItems: "center", justifyContent: "center" },
