@@ -9,6 +9,9 @@
       "en-US": {
         "title": "Dalee",
         "subtitle": "A new word every day",
+        "privacyPolicyUrl": "https://hags1153.github.io/dalee/privacy.html",
+        "supportUrl": "https://hags1153.github.io/dalee/support.html",
+        "marketingUrl": "https://hags1153.github.io/dalee/",
         "description": "Dalee is a daily word puzzle. Every day there's one new five-letter word, and everyone gets the same one — so it's you against the word (and your friends).\n\nYou have six guesses. After each guess, the tiles show you how close you are:\n\n• Green — right letter, right spot\n• Yellow — right letter, wrong spot\n• Gray — not in the word\n\nUse the clues, narrow it down, and crack the word before you run out of guesses. Come back tomorrow for a fresh one and keep your streak alive.\n\nSimple to learn, tough to master, and over in a few minutes a day. One word. Six tries. How long can your streak go?\n\n— One new puzzle every day\n— Six guesses with color-coded hints\n— Build and protect your daily streak\n— Clean, distraction-free design\n— No account, no ads, no clutter — just the word",
         "keywords": ["word", "puzzle", "daily", "guess", "letters", "brain", "vocabulary", "streak", "words", "wordplay", "quiz"],
         "promoText": "One fresh five-letter puzzle a day. Six guesses, color clues, and a streak to protect. Same word for everyone — how fast can you crack it?",
