@@ -1,0 +1,31 @@
+{
+  "cli": {
+    "version": ">= 18.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": { "resourceClass": "m-medium" }
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": { "resourceClass": "m-medium", "simulator": false }
+    },
+    "production": {
+      "autoIncrement": true,
+      "ios": { "resourceClass": "m-medium" },
+      "android": { "buildType": "app-bundle" }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascApiKeyPath": "/home/racescanserver/Downloads/AuthKey_6D4ACN7D5U.p8",
+        "ascApiKeyId": "6D4ACN7D5U",
+        "ascApiKeyIssuerId": "c0d30d65-1d8e-4838-ab7d-427fff401e53"
+      }
+    }
+  }
+}

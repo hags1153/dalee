@@ -1,0 +1,10 @@
+Starting project at /home/racescanserver/games/daily-word
+Starting Metro Bundler
+
+Waiting on http://localhost:8081
+
+Logs for your project will appear below.
+ ERROR  An unknown error occurred while installing React Native DevTools. Details:
+
+[3971423:0721/201101.559149:FATAL:sandbox/linux/suid/client/setuid_sandbox_host.cc:166] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now. You need to make sure that /home/racescanserver/.cache/dotslash/64/ed7915e5fef86802e862c274e17f780fa75388/React Native DevTools-linux-x64/chrome-sandbox is owned by root and has mode 4755.
+
