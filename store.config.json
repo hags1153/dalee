@@ -1,6 +1,7 @@
 {
   "configVersion": 0,
   "apple": {
+    "copyright": "2026 Ryan Hagerty",
     "version": "1.0",
     "release": {
       "automaticRelease": true
