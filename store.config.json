@@ -2,21 +2,21 @@
   "configVersion": 0,
   "apple": {
     "copyright": "2026 Ryan Hagerty",
-    "version": "1.0",
+    "version": "1.0.1",
     "release": {
       "automaticRelease": true
     },
     "info": {
       "en-US": {
         "title": "Dalee",
-        "subtitle": "A new word every day",
+        "subtitle": "Five word games, daily",
         "privacyPolicyUrl": "https://hags1153.github.io/dalee/privacy.html",
         "supportUrl": "https://hags1153.github.io/dalee/support.html",
         "marketingUrl": "https://hags1153.github.io/dalee/",
-        "description": "Dalee is a daily word puzzle. Every day there's one new five-letter word, and everyone gets the same one — so it's you against the word (and your friends).\n\nYou have six guesses. After each guess, the tiles show you how close you are:\n\n• Green — right letter, right spot\n• Yellow — right letter, wrong spot\n• Gray — not in the word\n\nUse the clues, narrow it down, and crack the word before you run out of guesses. Come back tomorrow for a fresh one and keep your streak alive.\n\nSimple to learn, tough to master, and over in a few minutes a day. One word. Six tries. How long can your streak go?\n\n— One new puzzle every day\n— Six guesses with color-coded hints\n— Build and protect your daily streak\n— Clean, distraction-free design\n— No account, no ads, no clutter — just the word",
-        "keywords": ["word", "puzzle", "daily", "guess", "letters", "brain", "vocabulary", "streak", "words", "wordplay", "quiz"],
-        "promoText": "One fresh five-letter puzzle a day. Six guesses, color clues, and a streak to protect. Same word for everyone — how fast can you crack it?",
-        "releaseNotes": "First release — one new word every day. Six guesses, color hints, and streaks. Good luck!"
+        "description": "Dalee is the daily word circuit — five bite-size word games, one fresh set every day. Everyone plays the same puzzles, so it's you against the day (and your friends).\n\nPlay the full circuit in about 25 minutes:\n\n• Wordle — guess the five-letter word in six tries\n• Scramble — unscramble the jumbled letters\n• Ladder — change one letter at a time to reach the target\n• Missing — fill in the blanks from a clue\n• Blitz — find as many words as you can in 60 seconds\n\nRack up a daily score, build your streak, and come back tomorrow for a brand-new circuit. Beautifully designed, quick to play, and endlessly replayable.\n\n— Five word games in one daily circuit\n— A fresh set of puzzles every day\n— Daily scores and streaks to keep you coming back\n— Gorgeous, distraction-free design\n— Free to play",
+        "keywords": ["word", "puzzle", "daily", "games", "scramble", "anagram", "ladder", "blitz", "streak", "brain", "vocabulary"],
+        "promoText": "Five word games, one a day. Wordle, Scramble, Ladder, Missing and Blitz — play the daily circuit in about 25 minutes and keep your streak alive.",
+        "releaseNotes": "The Daily Circuit is here! Five word games every day — Wordle, Scramble, Ladder, Missing and Blitz — in a beautiful new design with daily scores and streaks."
       }
     },
     "advisory": {
