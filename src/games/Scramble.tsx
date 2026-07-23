@@ -92,9 +92,9 @@ const styles = StyleSheet.create({
   hint: { color: C.textFaint, textAlign: "center", marginTop: 8, fontWeight: "600" },
   slots: { flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 30 },
   slot: { width: 54, height: 62, borderRadius: radius.sm, borderWidth: 2, alignItems: "center", justifyContent: "center" },
-  slotT: { color: "#fff", fontSize: 28, fontWeight: "700", fontFamily: tileFont },
+  slotT: { color: "#fff", fontSize: 28, fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%" },
   pool: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 10, marginTop: 48 },
   chip: { width: 58, height: 66, borderRadius: radius.md, backgroundColor: C.surfaceHi, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: C.hairline },
   chipUsed: { backgroundColor: "transparent", borderStyle: "dashed" },
-  chipT: { color: "#fff", fontSize: 28, fontWeight: "700", fontFamily: tileFont },
+  chipT: { color: "#fff", fontSize: 28, fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%" },
 });

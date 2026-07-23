@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   arrow: { color: C.textFaint, fontSize: 22 },
   wrow: { flexDirection: "row", gap: 6 },
   cell: { width: 46, height: 50, borderRadius: radius.sm, borderWidth: 2, alignItems: "center", justifyContent: "center" },
-  cellT: { color: "#fff", fontSize: 22, fontWeight: "700", fontFamily: tileFont, textAlign: "center", includeFontPadding: false },
+  cellT: { color: "#fff", fontSize: 22, fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%", includeFontPadding: false },
   match: { color: C.textFaint, marginTop: 10, fontWeight: "600" },
   toast: { position: "absolute", top: 108, alignSelf: "center", zIndex: 10, backgroundColor: C.text, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
   toastT: { color: C.bg0, fontWeight: "800" },

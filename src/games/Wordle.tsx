@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   grid: { alignItems: "center", gap: 7, marginTop: 8 },
   row: { flexDirection: "row", gap: 7 },
   tile: { width: TILE, height: TILE, borderWidth: 2, borderRadius: radius.sm, alignItems: "center", justifyContent: "center" },
-  tileT: { color: "#fff", fontSize: TILE * 0.46, fontWeight: "700", fontFamily: tileFont, textAlign: "center", includeFontPadding: false },
+  tileT: { color: "#fff", fontSize: TILE * 0.46, fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%", includeFontPadding: false },
   toast: { position: "absolute", top: 96, alignSelf: "center", zIndex: 10, backgroundColor: C.text, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
   toastT: { color: C.bg0, fontWeight: "800" },
   toastWin: { backgroundColor: C.correct },

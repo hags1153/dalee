@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   tiles: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 9, marginTop: 8 },
   tile: { width: 52, height: 60, borderRadius: radius.md, backgroundColor: C.surfaceHi, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: C.hairline },
   tileUsed: { backgroundColor: "transparent", borderStyle: "dashed" },
-  tileT: { color: "#fff", fontSize: 24, fontWeight: "700", fontFamily: tileFont },
+  tileT: { color: "#fff", fontSize: 24, fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%" },
   foundH: { color: C.textFaint, fontWeight: "700", marginTop: 16 },
   foundWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingBottom: 16 },
   foundChip: { backgroundColor: C.surface, paddingHorizontal: 12, paddingVertical: 7, borderRadius: radius.pill, borderWidth: 1, borderColor: C.hairline },

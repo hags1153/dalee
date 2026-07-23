@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   hSub: { color: C.textFaint, ...font.label, marginTop: 2 },
   key: { minWidth: 30, flex: 1, maxWidth: 42, height: 52, alignItems: "center", justifyContent: "center", borderRadius: 8 },
   keyWide: { flex: 1.5, maxWidth: 58 },
-  keyText: { color: C.text, fontSize: 16, fontWeight: "700" },
+  keyText: { color: C.text, fontSize: 16, fontWeight: "700", textAlign: "center", width: "100%" },
   timer: { backgroundColor: C.surfaceHi, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill },
   timerT: { color: C.textDim, fontSize: 13, fontWeight: "800" },
   intro: { color: C.textDim, fontSize: 13.5, lineHeight: 19, textAlign: "center", marginTop: 10, paddingHorizontal: 10 },

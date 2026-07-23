@@ -85,5 +85,5 @@ const styles = StyleSheet.create({
   hintT: { color: C.text, fontSize: 16, fontWeight: "600", textAlign: "center" },
   word: { flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 40 },
   tile: { width: 52, height: 60, borderRadius: radius.sm, borderWidth: 2, alignItems: "center", justifyContent: "center" },
-  tileT: { color: "#fff", fontSize: 26, fontWeight: "700", fontFamily: tileFont },
+  tileT: { color: "#fff", fontSize: 26, fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%" },
 });
