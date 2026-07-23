@@ -93,6 +93,20 @@ src/
   ASC keys are account-wide; dist certs are shared across apps — never mint new per app.
 - `ITSAppUsesNonExemptEncryption=false` (export compliance pre-answered).
 
+## OTA updates (EAS Update)
+
+`expo-updates` is installed and configured (added in 1.0.4). JS-only changes can ship
+**over-the-air** without a new binary:
+
+- `app.json`: `updates.url = https://u.expo.dev/8a4896a9-…`, `runtimeVersion.policy = "appVersion"`.
+- `eas.json`: production profile → `channel: "production"` (preview → `"preview"`).
+- Channel **production** is linked to branch **production**.
+- Push an update: `eas update --branch production --message "…"`.
+- **Runtime gating:** an OTA update only reaches builds whose `runtimeVersion` matches. With the
+  `appVersion` policy, runtime = the app version string — so an update published now reaches **1.0.4**
+  builds. Bumping the native version (e.g. to 1.0.5) requires a new build before OTA resumes for it.
+- Native changes (new packages, permissions, config plugins) still require a full EAS build + submit.
+
 ## Build & submit (non-interactive from this box)
 
 ```bash
@@ -132,6 +146,8 @@ Store screenshots live in `docs/screenshots/` and `screenshots/`.
   Wordle/Ladder, high-contrast letter tiles, win flourishes, tidy-up across all pages.
 - **1.0.3** — **time bonus** + live timer, **restart penalty**, monospaced letter tiles (definitive
   fix for the hard-to-see "I"), and a short how-to-play line on every game.
+- **1.0.4** — added **OTA updates** (expo-updates / EAS Update, production channel). No gameplay
+  changes vs 1.0.3; this build makes future JS fixes shippable over-the-air.
 
 ## Roadmap / fast-follow
 

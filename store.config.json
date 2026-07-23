@@ -2,7 +2,7 @@
   "configVersion": 0,
   "apple": {
     "copyright": "2026 Ryan Hagerty",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "release": {
       "automaticRelease": true
     },
@@ -16,7 +16,7 @@
         "description": "Dalee is the daily word circuit — five bite-size word games, one fresh set every day. Everyone plays the same puzzles, so it's you against the day (and your friends).\n\nPlay the full circuit in about 25 minutes:\n\n• Wordle — guess the five-letter word in six tries\n• Scramble — unscramble the jumbled letters\n• Ladder — change one letter at a time to reach the target\n• Missing — fill in the blanks from a clue\n• Blitz — find as many words as you can in 60 seconds\n\nRack up a daily score, build your streak, and come back tomorrow for a brand-new circuit. Beautifully designed, quick to play, and endlessly replayable.\n\n— Five word games in one daily circuit\n— A fresh set of puzzles every day\n— Daily scores and streaks to keep you coming back\n— Gorgeous, distraction-free design\n— Free to play",
         "keywords": ["word", "puzzle", "daily", "games", "scramble", "anagram", "ladder", "blitz", "streak", "brain", "vocabulary"],
         "promoText": "Five word games, one a day. Wordle, Scramble, Ladder, Missing and Blitz — play the daily circuit in about 25 minutes and keep your streak alive.",
-        "releaseNotes": "Scoring just got deeper! Solve faster for a time bonus, and think twice before restarting — starting a game over now costs points. Crisper, easier-to-read letter tiles, a quick how-to-play line on every game, and a live timer so you can race the clock."
+        "releaseNotes": "Under-the-hood upgrade: Dalee now supports instant over-the-air updates, so improvements can arrive without waiting for a full app update. Includes the deeper scoring (time bonus + restart penalty), crisp easy-to-read letter tiles, a live timer, and a quick how-to-play line on every game."
       }
     },
     "advisory": {

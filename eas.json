@@ -11,10 +11,12 @@
     },
     "preview": {
       "distribution": "internal",
+      "channel": "preview",
       "ios": { "resourceClass": "m-medium", "simulator": false }
     },
     "production": {
       "autoIncrement": true,
+      "channel": "production",
       "ios": { "resourceClass": "m-medium" },
       "android": { "buildType": "app-bundle" }
     }
