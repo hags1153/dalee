@@ -5,4 +5,5 @@ export type GameProps = {
   onClose: () => void;
   existing?: GameResult;
   restarts?: number; // times this game was restarted today (for the score penalty)
+  forFun?: boolean;  // replaying a game already completed today — don't change the score
 };

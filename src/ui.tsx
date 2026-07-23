@@ -58,18 +58,25 @@ export function Header({ title, subtitle, onClose, right }: { title: string; sub
         <Text style={styles.hTitle}>{title}</Text>
         {!!subtitle && <Text style={styles.hSub}>{subtitle}</Text>}
       </View>
-      <View style={styles.close}>{right}</View>
+      <View style={styles.rightSlot}>{right}</View>
     </View>
   );
 }
 
-// Live stopwatch badge for the header — makes it clear that speed counts.
+// Full stopwatch (M:SS), always shown so players can watch the clock.
 export function TimerBadge({ seconds }: { seconds: number }) {
   const m = Math.floor(seconds / 60), s = seconds % 60;
-  const label = m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `${s}s`;
-  return (
-    <View style={styles.timer}><Text style={styles.timerT}>⏱ {label}</Text></View>
-  );
+  return <View style={styles.timer}><Text style={styles.timerT}>⏱ {m}:{String(s).padStart(2, "0")}</Text></View>;
+}
+
+// Live "points on the line" pill — visibly drops when a hint or wrong guess costs points.
+export function PointsPill({ points }: { points: number }) {
+  return <View style={styles.points}><Text style={styles.pointsT}>★ {points}</Text></View>;
+}
+
+// Shown when replaying a game that's already done today.
+export function FunBanner() {
+  return <View style={styles.funBanner}><Text style={styles.funT}>✓ Already completed today — playing for fun. This won't change your score.</Text></View>;
 }
 
 // A short one-line explainer shown at the top of each game.
@@ -137,7 +144,12 @@ const styles = StyleSheet.create({
   key: { minWidth: 30, flex: 1, maxWidth: 42, height: 52, alignItems: "center", justifyContent: "center", borderRadius: 8 },
   keyWide: { flex: 1.5, maxWidth: 58 },
   keyText: { color: C.text, fontSize: 16, fontWeight: "700", textAlign: "center", width: "100%" },
+  rightSlot: { minWidth: 40, height: 40, flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 6 },
   timer: { backgroundColor: C.surfaceHi, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill },
-  timerT: { color: C.textDim, fontSize: 13, fontWeight: "800" },
+  timerT: { color: C.text, fontSize: 14, fontWeight: "800", fontVariant: ["tabular-nums"] },
+  points: { backgroundColor: C.accent + "22", paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill },
+  pointsT: { color: C.accentSoft, fontSize: 14, fontWeight: "800" },
   intro: { color: C.textDim, fontSize: 13.5, lineHeight: 19, textAlign: "center", marginTop: 10, paddingHorizontal: 10 },
+  funBanner: { backgroundColor: C.present + "1F", borderColor: C.present + "66", borderWidth: 1, borderRadius: radius.md, paddingVertical: 9, paddingHorizontal: 14, marginTop: 10 },
+  funT: { color: C.present, fontSize: 12.5, fontWeight: "700", textAlign: "center", lineHeight: 17 },
 });

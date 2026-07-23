@@ -81,7 +81,12 @@ export default function Hub({ day, dayState, stats, onPlay, onSignIn }: {
         {/* CTA */}
         <View style={{ marginTop: 20 }}>
           {done
-            ? <View style={styles.doneCard}><Text style={styles.doneT}>Circuit complete!</Text><Text style={styles.doneSub}>You scored {fmt(total)} today · {stats.streak}🔥 day streak</Text></View>
+            ? <View style={styles.doneCard}>
+                <Text style={styles.doneT}>Circuit complete!</Text>
+                <Text style={styles.doneSub}>You scored {fmt(total)} today · {stats.streak}🔥 day streak</Text>
+                <Text style={styles.doneFun}>Already completed today — tap any game to play for fun. It won't change your score.</Text>
+                <GradientButton label="Play for fun 🎈" colors={gradients.brand as any} onPress={() => onPlay(CIRCUIT[0])} style={{ marginTop: 14, alignSelf: "stretch" }} />
+              </View>
             : <GradientButton label={progress === 0 ? "Start today's circuit" : `Continue → ${games[next!].name}`} colors={gradients.brand as any} onPress={() => next && onPlay(next)} />}
         </View>
       </ScrollView>
@@ -128,4 +133,5 @@ const styles = StyleSheet.create({
   doneCard: { backgroundColor: C.surface, borderRadius: radius.lg, padding: 20, alignItems: "center", borderWidth: 1, borderColor: C.correct + "55" },
   doneT: { color: C.correct, fontSize: 20, fontWeight: "800" },
   doneSub: { color: C.textDim, marginTop: 6, fontWeight: "600" },
+  doneFun: { color: C.textFaint, marginTop: 12, fontWeight: "600", fontSize: 13, textAlign: "center", lineHeight: 18 },
 });

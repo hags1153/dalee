@@ -10,16 +10,18 @@ export const wordleScore = (guesses: number, won: boolean) =>
   !won ? 0 : WORDLE_BY_GUESS[guesses] ?? 320;
 
 // Scramble — start high, lose points for wrong tries and hints.
+export const SCRAMBLE_WRONG = 120, SCRAMBLE_HINT = 180;
 export const scrambleScore = (wrong: number, hints: number) =>
-  Math.max(200, 1000 - wrong * 120 - hints * 180);
+  Math.max(200, 1000 - wrong * SCRAMBLE_WRONG - hints * SCRAMBLE_HINT);
 
 // Ladder — the shorter the chain, the bigger the score.
 export const ladderScore = (steps: number) =>
   Math.max(350, 1150 - steps * 80);
 
 // Missing — clean fills win big; wrong guesses and hints bite.
+export const MISSING_WRONG = 130, MISSING_HINT = 220;
 export const missingScore = (wrong: number, hints: number) =>
-  Math.max(200, 1000 - wrong * 130 - hints * 220);
+  Math.max(200, 1000 - wrong * MISSING_WRONG - hints * MISSING_HINT);
 
 // Blitz — points per word by length; they add up fast in 60s.
 export const blitzWordPts = (len: number) =>

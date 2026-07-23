@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
-import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, haptic } from "../ui";
+import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, FunBanner, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { pick, shuffle } from "../daily";
 import { blitzWordPts as pts, applyRestarts } from "../scoring";
@@ -10,7 +10,7 @@ import { GameProps } from "./types";
 const G = games.blitz;
 const DURATION = 60;
 
-export default function Blitz({ seed, onDone, onClose, restarts = 0 }: GameProps) {
+export default function Blitz({ seed, onDone, onClose, restarts = 0, forFun = false }: GameProps) {
   const letters = useMemo(() => shuffle(pick(BLITZ_BASES, seed).split(""), seed), [seed]);
   const [used, setUsed] = useState<number[]>([]);
   const [found, setFound] = useState<string[]>([]);
@@ -26,9 +26,10 @@ export default function Blitz({ seed, onDone, onClose, restarts = 0 }: GameProps
   useEffect(() => {
     if (time <= 0 && !finished.current) {
       finished.current = true; haptic.success();
-      onDone({ done: true, won: found.length > 0, score: applyRestarts(score, restarts) });
+      if (forFun) onClose();
+      else onDone({ done: true, won: found.length > 0, score: applyRestarts(score, restarts) });
     }
-  }, [time, score, found.length, onDone, restarts]);
+  }, [time, score, found.length, onDone, onClose, restarts, forFun]);
 
   const word = used.map((i) => letters[i]).join("");
   const flash = (m: string) => { setFlashMsg(m); setTimeout(() => setFlashMsg(""), 900); };
@@ -49,6 +50,7 @@ export default function Blitz({ seed, onDone, onClose, restarts = 0 }: GameProps
       <View style={styles.wrap}>
         <Header title="Blitz" subtitle="Most words in 60s" onClose={onClose} right={<Text style={styles.score}>{score}</Text>} />
         <GameIntro text={games.blitz.desc} />
+        {forFun && <FunBanner />}
         <View style={styles.timerTrack}><View style={[styles.timerFill, { width: `${(time / DURATION) * 100}%`, backgroundColor: time <= 10 ? C.present : G.hue }]} /></View>
         <Text style={[styles.time, time <= 10 && { color: C.present }]}>{time}s</Text>
 

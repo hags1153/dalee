@@ -53,10 +53,11 @@ export default function App() {
     const Game = GAMES[screen.key];
     const idx = CIRCUIT.indexOf(screen.key);
     const restarts = Math.max(0, (dayState.opens?.[screen.key] ?? 1) - 1);
+    const forFun = !!dayState.results[screen.key]?.done;
     return (
       <>
         <StatusBar style="light" />
-        <Game seed={seedFor(idx + 1)} existing={dayState.results[screen.key]} restarts={restarts}
+        <Game seed={seedFor(idx + 1)} existing={dayState.results[screen.key]} restarts={restarts} forFun={forFun}
           onDone={(r) => onDone(screen.key, r)} onClose={() => setScreen({ name: "hub" })} />
       </>
     );

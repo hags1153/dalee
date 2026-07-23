@@ -1,15 +1,16 @@
 import React, { useMemo, useState, useRef } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
-import { ScreenBG, Header, Keyboard, GradientButton, GhostButton, GameIntro, TimerBadge, useStopwatch, haptic } from "../ui";
+import { ScreenBG, Header, Keyboard, GradientButton, GhostButton, GameIntro, TimerBadge, PointsPill, FunBanner, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { pick, seededRng } from "../daily";
-import { missingScore, timeBonus, applyRestarts } from "../scoring";
+import { missingScore, timeBonus, applyRestarts, MISSING_HINT, MISSING_WRONG } from "../scoring";
 import { MISSING } from "../wordbank";
 import { GameProps } from "./types";
 
 const G = games.missing;
 
-export default function Missing({ seed, onDone, onClose, restarts = 0 }: GameProps) {
+export default function Missing({ seed, onDone, onClose, restarts = 0, forFun = false }: GameProps) {
+  const finish = (r: Parameters<typeof onDone>[0]) => (forFun ? onClose() : onDone(r));
   const puzzle = useMemo(() => pick(MISSING, seed), [seed]);
   const word = puzzle.word;
   // deterministically choose which positions are blank (~45%, at least 2)
@@ -25,9 +26,11 @@ export default function Missing({ seed, onDone, onClose, restarts = 0 }: GamePro
   const [hints, setHints] = useState(0);
   const [state, setState] = useState<"play" | "won">("play");
   const [toast, setToast] = useState("");
+  const [win, setWin] = useState(false);
   const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
   const doShake = () => { haptic.error(); Animated.sequence([-8, 8, -6, 6, 0].map((v) => Animated.timing(shake, { toValue: v, duration: 45, useNativeDriver: true }))).start(); };
+  const flash = (m: string, w = false) => { setWin(w); setToast(m); if (!w) setTimeout(() => setToast(""), 1000); };
 
   const display = word.split("").map((ch, i) => {
     const bi = blanks.indexOf(i);
@@ -42,21 +45,22 @@ export default function Missing({ seed, onDone, onClose, restarts = 0 }: GamePro
   };
   const hint = () => {
     if (state !== "play" || fills.length >= blanks.length) return;
-    const pos = fills.length; setHints((h) => h + 1); setFills((f) => [...f, word[blanks[pos]]]); haptic.tap("medium");
+    const pos = fills.length; setHints((h) => h + 1); setFills((f) => [...f, word[blanks[pos]]]); haptic.tap("medium"); flash(`−${MISSING_HINT} · hint`);
   };
   const submit = () => {
     if (state !== "play" || fills.length !== blanks.length) return;
     const ok = blanks.every((p, k) => fills[k] === word[p]);
-    if (ok) { haptic.success(); setState("won"); const score = applyRestarts(missingScore(wrong, hints) + timeBonus(secs), restarts); setToast(`Got it, ${secs}s!  +${score}`); setTimeout(() => onDone({ done: true, won: true, score }), 1050); }
-    else { setWrong((w) => w + 1); doShake(); setFills([]); }
+    if (ok) { haptic.success(); setState("won"); const score = applyRestarts(missingScore(wrong, hints) + timeBonus(secs), restarts); flash(forFun ? `Got it, ${secs}s! 🎉` : `Got it, ${secs}s!  +${score}`, true); setTimeout(() => finish({ done: true, won: true, score }), 1050); }
+    else { setWrong((w) => w + 1); doShake(); setFills([]); flash(`−${MISSING_WRONG} · wrong`); }
   };
 
   return (
     <ScreenBG>
       <View style={styles.wrap}>
-        <Header title="Missing" subtitle="Fill in the blanks" onClose={onClose} right={<TimerBadge seconds={secs} />} />
+        <Header title="Missing" subtitle="Fill in the blanks" onClose={onClose} right={<><PointsPill points={missingScore(wrong, hints)} /><TimerBadge seconds={secs} /></>} />
         <GameIntro text={games.missing.desc} />
-        {!!toast && <View style={styles.toast}><Text style={styles.toastT}>{toast}</Text></View>}
+        {forFun && <FunBanner />}
+        {!!toast && <View style={[styles.toast, win && styles.toastWin]}><Text style={styles.toastT}>{toast}</Text></View>}
         <View style={styles.hintCard}><Text style={styles.hintT}>💡 {puzzle.hint}</Text></View>
         <Animated.View style={[styles.word, { transform: [{ translateX: shake }] }]}>
           {display.map((d, i) => (
@@ -67,7 +71,7 @@ export default function Missing({ seed, onDone, onClose, restarts = 0 }: GamePro
         </Animated.View>
         <View style={{ marginTop: "auto", gap: 12, paddingBottom: 14 }}>
           <View style={{ flexDirection: "row", gap: 12 }}>
-            <GhostButton label="💡 Hint" onPress={hint} style={{ flex: 1 }} />
+            <GhostButton label={`💡 Hint −${MISSING_HINT}`} onPress={hint} style={{ flex: 1 }} />
             <GradientButton label="Submit" colors={G.grad as any} onPress={submit} disabled={fills.length !== blanks.length} style={{ flex: 1 }} />
           </View>
           <Keyboard onKey={onKey} showEnter={false} />
@@ -79,7 +83,8 @@ export default function Missing({ seed, onDone, onClose, restarts = 0 }: GamePro
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 50 },
-  toast: { position: "absolute", top: 96, alignSelf: "center", zIndex: 10, backgroundColor: C.correct, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
+  toast: { position: "absolute", top: 96, alignSelf: "center", zIndex: 10, backgroundColor: C.surfaceHi, borderWidth: 1, borderColor: C.hairline, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
+  toastWin: { backgroundColor: C.correct, borderColor: C.correct },
   toastT: { color: "#fff", fontWeight: "800" },
   hintCard: { backgroundColor: C.surface, borderRadius: radius.md, padding: 16, marginTop: 16, borderWidth: 1, borderColor: C.hairline },
   hintT: { color: C.text, fontSize: 16, fontWeight: "600", textAlign: "center" },

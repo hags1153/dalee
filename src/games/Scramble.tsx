@@ -1,15 +1,16 @@
 import React, { useMemo, useState, useRef } from "react";
 import { View, Text, StyleSheet, Pressable, Animated } from "react-native";
-import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, TimerBadge, useStopwatch, haptic } from "../ui";
+import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, TimerBadge, PointsPill, FunBanner, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { pick, shuffle } from "../daily";
-import { scrambleScore, timeBonus, applyRestarts } from "../scoring";
+import { scrambleScore, timeBonus, applyRestarts, SCRAMBLE_HINT, SCRAMBLE_WRONG } from "../scoring";
 import { SCRAMBLE_WORDS } from "../wordbank";
 import { GameProps } from "./types";
 
 const G = games.scramble;
 
-export default function Scramble({ seed, onDone, onClose, restarts = 0 }: GameProps) {
+export default function Scramble({ seed, onDone, onClose, restarts = 0, forFun = false }: GameProps) {
+  const finish = (r: Parameters<typeof onDone>[0]) => (forFun ? onClose() : onDone(r));
   const answer = useMemo(() => pick(SCRAMBLE_WORDS, seed), [seed]);
   const pool = useMemo(() => {
     let s = shuffle(answer.split(""), seed);
@@ -21,12 +22,14 @@ export default function Scramble({ seed, onDone, onClose, restarts = 0 }: GamePr
   const [hints, setHints] = useState(0);
   const [state, setState] = useState<"play" | "won">("play");
   const [toast, setToast] = useState("");
+  const [win, setWin] = useState(false);
   const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
 
   const usedSet = new Set(placed);
   const built = placed.map((i) => pool[i]).join("");
   const doShake = () => { haptic.error(); Animated.sequence([-8, 8, -6, 6, 0].map((v) => Animated.timing(shake, { toValue: v, duration: 45, useNativeDriver: true }))).start(); };
+  const flash = (m: string, w = false) => { setWin(w); setToast(m); if (!w) setTimeout(() => setToast(""), 1000); };
 
   const place = (i: number) => { if (state !== "play" || usedSet.has(i) || placed.length >= answer.length) return; haptic.tap(); setPlaced([...placed, i]); };
   const back = () => { if (!placed.length) return; haptic.tap(); setPlaced(placed.slice(0, -1)); };
@@ -36,24 +39,25 @@ export default function Scramble({ seed, onDone, onClose, restarts = 0 }: GamePr
     // find an unused pool tile matching the needed letter
     const need = answer[pos];
     const idx = pool.findIndex((ch, i) => ch === need && !usedSet.has(i));
-    if (idx >= 0) { setHints((h) => h + 1); setPlaced([...placed, idx]); haptic.tap("medium"); }
+    if (idx >= 0) { setHints((h) => h + 1); setPlaced([...placed, idx]); haptic.tap("medium"); flash(`−${SCRAMBLE_HINT} · hint`); }
   };
   const submit = () => {
     if (state !== "play" || built.length !== answer.length) return;
     if (built === answer) {
       haptic.success(); setState("won");
       const score = applyRestarts(scrambleScore(wrong, hints) + timeBonus(secs), restarts);
-      setToast(`Nice, ${secs}s!  +${score}`);
-      setTimeout(() => onDone({ done: true, won: true, score }), 1050);
-    } else { setWrong((w) => w + 1); doShake(); }
+      flash(forFun ? `Nice, ${secs}s! 🎉` : `Nice, ${secs}s!  +${score}`, true);
+      setTimeout(() => finish({ done: true, won: true, score }), 1050);
+    } else { setWrong((w) => w + 1); doShake(); flash(`−${SCRAMBLE_WRONG} · wrong`); }
   };
 
   return (
     <ScreenBG>
       <View style={styles.wrap}>
-        <Header title="Scramble" subtitle="Unscramble the word" onClose={onClose} right={<TimerBadge seconds={secs} />} />
+        <Header title="Scramble" subtitle="Unscramble the word" onClose={onClose} right={<><PointsPill points={scrambleScore(wrong, hints)} /><TimerBadge seconds={secs} /></>} />
         <GameIntro text={games.scramble.desc} />
-        {!!toast && <View style={styles.toast}><Text style={styles.toastT}>{toast}</Text></View>}
+        {forFun && <FunBanner />}
+        {!!toast && <View style={[styles.toast, win && styles.toastWin]}><Text style={styles.toastT}>{toast}</Text></View>}
         <Text style={styles.hint}>{answer.length} letters</Text>
 
         <Animated.View style={[styles.slots, { transform: [{ translateX: shake }] }]}>
@@ -76,7 +80,7 @@ export default function Scramble({ seed, onDone, onClose, restarts = 0 }: GamePr
         <View style={{ marginTop: "auto", gap: 12, paddingBottom: 16 }}>
           <View style={{ flexDirection: "row", gap: 12 }}>
             <GhostButton label="⌫ Delete" onPress={back} style={{ flex: 1 }} />
-            <GhostButton label="💡 Hint" onPress={hint} style={{ flex: 1 }} />
+            <GhostButton label={`💡 Hint −${SCRAMBLE_HINT}`} onPress={hint} style={{ flex: 1 }} />
           </View>
           <GradientButton label="Submit" colors={G.grad as any} onPress={submit} disabled={built.length !== answer.length} />
         </View>
@@ -87,7 +91,8 @@ export default function Scramble({ seed, onDone, onClose, restarts = 0 }: GamePr
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 50 },
-  toast: { position: "absolute", top: 96, alignSelf: "center", zIndex: 10, backgroundColor: C.correct, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
+  toast: { position: "absolute", top: 96, alignSelf: "center", zIndex: 10, backgroundColor: C.surfaceHi, borderWidth: 1, borderColor: C.hairline, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
+  toastWin: { backgroundColor: C.correct, borderColor: C.correct },
   toastT: { color: "#fff", fontWeight: "800" },
   hint: { color: C.textFaint, textAlign: "center", marginTop: 8, fontWeight: "600" },
   slots: { flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 30 },

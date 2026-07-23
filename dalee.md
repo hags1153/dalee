@@ -147,7 +147,11 @@ Store screenshots live in `docs/screenshots/` and `screenshots/`.
 - **1.0.3** — **time bonus** + live timer, **restart penalty**, monospaced letter tiles (definitive
   fix for the hard-to-see "I"), and a short how-to-play line on every game.
 - **1.0.4** — added **OTA updates** (expo-updates / EAS Update, production channel). No gameplay
-  changes vs 1.0.3; this build makes future JS fixes shippable over-the-air.
+  changes vs 1.0.3; this build makes future JS fixes shippable over-the-air. Also the definitive
+  invisible-"I" fix: letter Text is `width:100%` + centered (narrow glyph was clipping to ~2px).
+- **1.0.5** — **play-for-fun** replays of completed games (banner + Hub prompt; score/streak untouched),
+  **visible hint/wrong deductions** (cost on the button + live "★ points" pill + −pts flash), and a
+  **full M:SS timer** in a widened header slot (was cramped in a 40px box).
 
 ## Roadmap / fast-follow
 
