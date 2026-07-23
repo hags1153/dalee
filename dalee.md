@@ -35,6 +35,10 @@ over 5,000 including the completion bonus.
 - **Missing** — `max(200, 1000 − wrong·130 − hints·220)`.
 - **Blitz** — per word by length: 7+→250, 6→150, 5→90, 4→45, 3→20 (adds up fast in 60s).
 - **Completion bonus** — **+750** for finishing all five in a day.
+- **Time bonus** — up to **+300**, decaying to 0 by ~60s (`timeBonus`), added to Wordle/Scramble/
+  Ladder/Missing on solve. Blitz is inherently timed. A live ⏱ timer shows in each game header.
+- **Restart penalty** — **−100 per restart** (`applyRestarts`). `DayState.opens[game]` counts starts;
+  `opens−1 = restarts`, passed into the game as the `restarts` prop and subtracted from the score.
 
 `dayTotal(d) = sum(game scores) + (all five done ? 750 : 0)`. The Hub shows this as the big
 "TODAY'S SCORE". Lifetime `totalScore` and `bestDay` are tracked in stats.
@@ -71,6 +75,9 @@ src/
 - Wordle & Ladder type into tiles; **in-progress tiles are filled + high-contrast** so narrow
   glyphs (e.g. "I") are clearly visible. They use a dedicated **SUBMIT** button above the keyboard
   (`Keyboard showEnter={false}`), not the ↵ key. Missing also uses its own Submit button.
+- Letter tiles render in a **monospaced face** (`theme.tileFont` → Menlo on iOS) so every glyph has
+  real width and the capital "I" gets serifs — it was the thin SF "I" that kept disappearing.
+- Each game shows a one-line `games[key].desc` intro (`<GameIntro>`) and a live `<TimerBadge>`.
 - See `AGENTS.md`: read the versioned Expo v57 docs before writing native/config code.
 
 ---
@@ -122,8 +129,9 @@ Store screenshots live in `docs/screenshots/` and `screenshots/`.
   Sign-in). Uploaded to TestFlight 2026-07-22. Store submission deferred (can't create a new
   store version while 1.0 is in review).
 - **1.0.2** — polish pass: big scoring system, redesigned Hub score showcase, SUBMIT buttons on
-  Wordle/Ladder, high-contrast letter tiles (fixes hard-to-see "I"), win flourishes, tidy-up
-  across all pages.
+  Wordle/Ladder, high-contrast letter tiles, win flourishes, tidy-up across all pages.
+- **1.0.3** — **time bonus** + live timer, **restart penalty**, monospaced letter tiles (definitive
+  fix for the hard-to-see "I"), and a short how-to-play line on every game.
 
 ## Roadmap / fast-follow
 

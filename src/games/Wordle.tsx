@@ -1,9 +1,9 @@
 import React, { useMemo, useState, useRef, useCallback } from "react";
 import { View, Text, StyleSheet, Animated, Dimensions } from "react-native";
-import { ScreenBG, Header, Keyboard, GradientButton, haptic } from "../ui";
-import { palette as C, games, radius } from "../theme";
+import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, useStopwatch, haptic } from "../ui";
+import { palette as C, games, radius, tileFont } from "../theme";
 import { pick } from "../daily";
-import { wordleScore } from "../scoring";
+import { wordleScore, timeBonus, applyRestarts } from "../scoring";
 import { WORDLE_ANSWERS, DICT5 } from "../wordbank";
 import { GameProps } from "./types";
 
@@ -23,7 +23,7 @@ function evaluate(guess: string, answer: string): St[] {
 }
 const col = (s: St) => s === "correct" ? C.correct : s === "present" ? C.present : C.absent;
 
-export default function Wordle({ seed, onDone, onClose }: GameProps) {
+export default function Wordle({ seed, onDone, onClose, restarts = 0 }: GameProps) {
   const answer = useMemo(() => pick(WORDLE_ANSWERS, seed), [seed]);
   const [guesses, setGuesses] = useState<string[]>([]);
   const [evals, setEvals] = useState<St[][]>([]);
@@ -31,6 +31,7 @@ export default function Wordle({ seed, onDone, onClose }: GameProps) {
   const [state, setState] = useState<"play" | "won" | "lost">("play");
   const [toast, setToast] = useState("");
   const [win, setWin] = useState(false);
+  const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
 
   const keyStatuses = useMemo(() => {
@@ -51,9 +52,9 @@ export default function Wordle({ seed, onDone, onClose }: GameProps) {
     setGuesses(ng); setEvals(ne); setCur("");
     const won = ev.every((s) => s === "correct");
     const lost = !won && ng.length >= MAX;
-    if (won) { haptic.success(); const score = wordleScore(ng.length, true); setState("won"); flash(`Solved!  +${score}`, true); setTimeout(() => onDone({ done: true, won: true, score, guesses: ng.length }), 1200); }
+    if (won) { haptic.success(); const score = applyRestarts(wordleScore(ng.length, true) + timeBonus(secs), restarts); setState("won"); flash(`Solved in ${secs}s!  +${score}`, true); setTimeout(() => onDone({ done: true, won: true, score, guesses: ng.length }), 1200); }
     else if (lost) { haptic.error(); setState("lost"); flash(answer); setTimeout(() => onDone({ done: true, won: false, score: 0, guesses: MAX }), 1400); }
-  }, [state, cur, answer, guesses, evals, onDone]);
+  }, [state, cur, answer, guesses, evals, onDone, secs, restarts]);
 
   const onKey = (k: string) => {
     if (state !== "play") return;
@@ -70,7 +71,8 @@ export default function Wordle({ seed, onDone, onClose }: GameProps) {
   return (
     <ScreenBG>
       <View style={styles.wrap}>
-        <Header title="Wordle" subtitle="Guess the 5-letter word" onClose={onClose} />
+        <Header title="Wordle" subtitle="Guess the 5-letter word" onClose={onClose} right={<TimerBadge seconds={secs} />} />
+        <GameIntro text={games.wordle.desc} />
         {!!toast && <View style={[styles.toast, win && styles.toastWin]}><Text style={[styles.toastT, win && styles.toastTWin]}>{toast}</Text></View>}
         <View style={styles.grid}>
           {rows.map((row, r) => {
@@ -106,7 +108,7 @@ const styles = StyleSheet.create({
   grid: { alignItems: "center", gap: 7, marginTop: 8 },
   row: { flexDirection: "row", gap: 7 },
   tile: { width: TILE, height: TILE, borderWidth: 2, borderRadius: radius.sm, alignItems: "center", justifyContent: "center" },
-  tileT: { color: "#fff", fontSize: TILE * 0.5, fontWeight: "800", textAlign: "center", includeFontPadding: false },
+  tileT: { color: "#fff", fontSize: TILE * 0.46, fontWeight: "700", fontFamily: tileFont, textAlign: "center", includeFontPadding: false },
   toast: { position: "absolute", top: 96, alignSelf: "center", zIndex: 10, backgroundColor: C.text, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
   toastT: { color: C.bg0, fontWeight: "800" },
   toastWin: { backgroundColor: C.correct },

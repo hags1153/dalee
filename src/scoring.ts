@@ -25,5 +25,14 @@ export const missingScore = (wrong: number, hints: number) =>
 export const blitzWordPts = (len: number) =>
   len >= 7 ? 250 : len === 6 ? 150 : len === 5 ? 90 : len === 4 ? 45 : 20;
 
+// Speed matters: a bonus up to +300 that decays to 0 by ~60 seconds.
+export const timeBonus = (seconds: number) =>
+  Math.max(0, Math.round(300 - seconds * 5));
+
+// Bailing out and starting a game over costs you.
+export const RESTART_PENALTY = 100;
+export const applyRestarts = (score: number, restarts: number) =>
+  Math.max(0, score - Math.max(0, restarts) * RESTART_PENALTY);
+
 // Thousands separators without relying on Intl (Hermes is spotty on it).
 export const fmt = (n: number) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

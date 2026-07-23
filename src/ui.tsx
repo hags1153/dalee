@@ -63,6 +63,31 @@ export function Header({ title, subtitle, onClose, right }: { title: string; sub
   );
 }
 
+// Live stopwatch badge for the header — makes it clear that speed counts.
+export function TimerBadge({ seconds }: { seconds: number }) {
+  const m = Math.floor(seconds / 60), s = seconds % 60;
+  const label = m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `${s}s`;
+  return (
+    <View style={styles.timer}><Text style={styles.timerT}>⏱ {label}</Text></View>
+  );
+}
+
+// A short one-line explainer shown at the top of each game.
+export function GameIntro({ text }: { text: string }) {
+  return <Text style={styles.intro}>{text}</Text>;
+}
+
+// Counts up once per second while `active`; resets nothing, just accumulates.
+export function useStopwatch(active: boolean) {
+  const [seconds, setSeconds] = React.useState(0);
+  React.useEffect(() => {
+    if (!active) return;
+    const id = setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  }, [active]);
+  return seconds;
+}
+
 export function ProgressDots({ total, done, color }: { total: number; done: number; color?: string }) {
   return (
     <View style={{ flexDirection: "row", gap: 6 }}>
@@ -112,4 +137,7 @@ const styles = StyleSheet.create({
   key: { minWidth: 30, flex: 1, maxWidth: 42, height: 52, alignItems: "center", justifyContent: "center", borderRadius: 8 },
   keyWide: { flex: 1.5, maxWidth: 58 },
   keyText: { color: C.text, fontSize: 16, fontWeight: "700" },
+  timer: { backgroundColor: C.surfaceHi, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill },
+  timerT: { color: C.textDim, fontSize: 13, fontWeight: "800" },
+  intro: { color: C.textDim, fontSize: 13.5, lineHeight: 19, textAlign: "center", marginTop: 10, paddingHorizontal: 10 },
 });

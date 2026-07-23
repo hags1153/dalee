@@ -1,4 +1,10 @@
 // Dalee design system — a premium, dark, vibrant look for the daily word circuit.
+import { Platform } from "react-native";
+
+// Monospaced face for letter tiles — every glyph has real width (the capital "I"
+// gets serifs), so single letters read clearly instead of vanishing to a thin stroke.
+export const tileFont = Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" }) as string;
+
 export const palette = {
   // base
   bg0: "#0B0C10",       // deepest background
@@ -21,11 +27,11 @@ export const palette = {
 
 // Per-game identity — each game in the circuit gets its own hue + gradient.
 export const games = {
-  wordle:   { key: "wordle",   name: "Wordle",   tag: "Guess the word",        hue: "#22C55E", grad: ["#16A34A", "#22C55E"], icon: "🟩" },
-  scramble: { key: "scramble", name: "Scramble", tag: "Unscramble it",         hue: "#8B5CF6", grad: ["#7C3AED", "#A855F7"], icon: "🔀" },
-  ladder:   { key: "ladder",   name: "Ladder",   tag: "One letter at a time",  hue: "#0EA5E9", grad: ["#0284C7", "#38BDF8"], icon: "🪜" },
-  missing:  { key: "missing",  name: "Missing",  tag: "Fill the blanks",       hue: "#F59E0B", grad: ["#D97706", "#FBBF24"], icon: "🕳️" },
-  blitz:    { key: "blitz",    name: "Blitz",    tag: "60-second word rush",   hue: "#F43F5E", grad: ["#E11D48", "#FB7185"], icon: "⚡" },
+  wordle:   { key: "wordle",   name: "Wordle",   tag: "Guess the word",        desc: "Guess the hidden 5-letter word in six tries. Tile colors tell you which letters are right.", hue: "#22C55E", grad: ["#16A34A", "#22C55E"], icon: "🟩" },
+  scramble: { key: "scramble", name: "Scramble", tag: "Unscramble it",         desc: "The letters of a word are jumbled — tap them in the right order to spell it out.", hue: "#8B5CF6", grad: ["#7C3AED", "#A855F7"], icon: "🔀" },
+  ladder:   { key: "ladder",   name: "Ladder",   tag: "One letter at a time",  desc: "Turn the start word into the target, changing just one letter at a time — every step must be a real word.", hue: "#0EA5E9", grad: ["#0284C7", "#38BDF8"], icon: "🪜" },
+  missing:  { key: "missing",  name: "Missing",  tag: "Fill the blanks",       desc: "Some letters are missing from a word. Use the clue to fill in the blanks.", hue: "#F59E0B", grad: ["#D97706", "#FBBF24"], icon: "🕳️" },
+  blitz:    { key: "blitz",    name: "Blitz",    tag: "60-second word rush",   desc: "Make as many real words as you can from the letters before the 60-second clock runs out.", hue: "#F43F5E", grad: ["#E11D48", "#FB7185"], icon: "⚡" },
 } as const;
 
 export type GameKey = keyof typeof games;

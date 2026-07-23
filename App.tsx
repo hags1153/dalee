@@ -37,15 +37,26 @@ export default function App() {
     setScreen({ name: "hub" });
   }, [dayState, day]);
 
+  // Opening a not-yet-finished game counts as a start; the 2nd+ start is a restart.
+  const openGame = useCallback(async (key: GameKey) => {
+    if (!dayState.results[key]?.done) {
+      const opens = { ...dayState.opens, [key]: (dayState.opens?.[key] ?? 0) + 1 };
+      const next: DayState = { ...dayState, opens };
+      setDayState(next); await saveDay(next);
+    }
+    setScreen({ name: "game", key });
+  }, [dayState]);
+
   if (!stats) return <View style={{ flex: 1, backgroundColor: C.bg1 }}><StatusBar style="light" /></View>;
 
   if (screen.name === "game") {
     const Game = GAMES[screen.key];
     const idx = CIRCUIT.indexOf(screen.key);
+    const restarts = Math.max(0, (dayState.opens?.[screen.key] ?? 1) - 1);
     return (
       <>
         <StatusBar style="light" />
-        <Game seed={seedFor(idx + 1)} existing={dayState.results[screen.key]}
+        <Game seed={seedFor(idx + 1)} existing={dayState.results[screen.key]} restarts={restarts}
           onDone={(r) => onDone(screen.key, r)} onClose={() => setScreen({ name: "hub" })} />
       </>
     );
@@ -56,7 +67,7 @@ export default function App() {
     <>
       <StatusBar style="light" />
       <Hub day={day} dayState={dayState} stats={stats}
-        onPlay={(k) => setScreen({ name: "game", key: k })}
+        onPlay={openGame}
         onSignIn={() => setScreen({ name: "signin" })} />
     </>
   );

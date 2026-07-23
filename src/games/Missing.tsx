@@ -1,15 +1,15 @@
 import React, { useMemo, useState, useRef } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
-import { ScreenBG, Header, Keyboard, GradientButton, GhostButton, haptic } from "../ui";
-import { palette as C, games, radius } from "../theme";
+import { ScreenBG, Header, Keyboard, GradientButton, GhostButton, GameIntro, TimerBadge, useStopwatch, haptic } from "../ui";
+import { palette as C, games, radius, tileFont } from "../theme";
 import { pick, seededRng } from "../daily";
-import { missingScore } from "../scoring";
+import { missingScore, timeBonus, applyRestarts } from "../scoring";
 import { MISSING } from "../wordbank";
 import { GameProps } from "./types";
 
 const G = games.missing;
 
-export default function Missing({ seed, onDone, onClose }: GameProps) {
+export default function Missing({ seed, onDone, onClose, restarts = 0 }: GameProps) {
   const puzzle = useMemo(() => pick(MISSING, seed), [seed]);
   const word = puzzle.word;
   // deterministically choose which positions are blank (~45%, at least 2)
@@ -25,6 +25,7 @@ export default function Missing({ seed, onDone, onClose }: GameProps) {
   const [hints, setHints] = useState(0);
   const [state, setState] = useState<"play" | "won">("play");
   const [toast, setToast] = useState("");
+  const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
   const doShake = () => { haptic.error(); Animated.sequence([-8, 8, -6, 6, 0].map((v) => Animated.timing(shake, { toValue: v, duration: 45, useNativeDriver: true }))).start(); };
 
@@ -46,14 +47,15 @@ export default function Missing({ seed, onDone, onClose }: GameProps) {
   const submit = () => {
     if (state !== "play" || fills.length !== blanks.length) return;
     const ok = blanks.every((p, k) => fills[k] === word[p]);
-    if (ok) { haptic.success(); setState("won"); const score = missingScore(wrong, hints); setToast(`Got it!  +${score}`); setTimeout(() => onDone({ done: true, won: true, score }), 1050); }
+    if (ok) { haptic.success(); setState("won"); const score = applyRestarts(missingScore(wrong, hints) + timeBonus(secs), restarts); setToast(`Got it, ${secs}s!  +${score}`); setTimeout(() => onDone({ done: true, won: true, score }), 1050); }
     else { setWrong((w) => w + 1); doShake(); setFills([]); }
   };
 
   return (
     <ScreenBG>
       <View style={styles.wrap}>
-        <Header title="Missing" subtitle="Fill in the blanks" onClose={onClose} />
+        <Header title="Missing" subtitle="Fill in the blanks" onClose={onClose} right={<TimerBadge seconds={secs} />} />
+        <GameIntro text={games.missing.desc} />
         {!!toast && <View style={styles.toast}><Text style={styles.toastT}>{toast}</Text></View>}
         <View style={styles.hintCard}><Text style={styles.hintT}>💡 {puzzle.hint}</Text></View>
         <Animated.View style={[styles.word, { transform: [{ translateX: shake }] }]}>
@@ -83,5 +85,5 @@ const styles = StyleSheet.create({
   hintT: { color: C.text, fontSize: 16, fontWeight: "600", textAlign: "center" },
   word: { flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 40 },
   tile: { width: 52, height: 60, borderRadius: radius.sm, borderWidth: 2, alignItems: "center", justifyContent: "center" },
-  tileT: { color: "#fff", fontSize: 28, fontWeight: "800" },
+  tileT: { color: "#fff", fontSize: 26, fontWeight: "700", fontFamily: tileFont },
 });

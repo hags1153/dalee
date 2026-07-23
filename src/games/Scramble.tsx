@@ -1,15 +1,15 @@
 import React, { useMemo, useState, useRef } from "react";
 import { View, Text, StyleSheet, Pressable, Animated } from "react-native";
-import { ScreenBG, Header, GradientButton, GhostButton, haptic } from "../ui";
-import { palette as C, games, radius } from "../theme";
+import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, TimerBadge, useStopwatch, haptic } from "../ui";
+import { palette as C, games, radius, tileFont } from "../theme";
 import { pick, shuffle } from "../daily";
-import { scrambleScore } from "../scoring";
+import { scrambleScore, timeBonus, applyRestarts } from "../scoring";
 import { SCRAMBLE_WORDS } from "../wordbank";
 import { GameProps } from "./types";
 
 const G = games.scramble;
 
-export default function Scramble({ seed, onDone, onClose }: GameProps) {
+export default function Scramble({ seed, onDone, onClose, restarts = 0 }: GameProps) {
   const answer = useMemo(() => pick(SCRAMBLE_WORDS, seed), [seed]);
   const pool = useMemo(() => {
     let s = shuffle(answer.split(""), seed);
@@ -21,6 +21,7 @@ export default function Scramble({ seed, onDone, onClose }: GameProps) {
   const [hints, setHints] = useState(0);
   const [state, setState] = useState<"play" | "won">("play");
   const [toast, setToast] = useState("");
+  const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
 
   const usedSet = new Set(placed);
@@ -41,8 +42,8 @@ export default function Scramble({ seed, onDone, onClose }: GameProps) {
     if (state !== "play" || built.length !== answer.length) return;
     if (built === answer) {
       haptic.success(); setState("won");
-      const score = scrambleScore(wrong, hints);
-      setToast(`Nice!  +${score}`);
+      const score = applyRestarts(scrambleScore(wrong, hints) + timeBonus(secs), restarts);
+      setToast(`Nice, ${secs}s!  +${score}`);
       setTimeout(() => onDone({ done: true, won: true, score }), 1050);
     } else { setWrong((w) => w + 1); doShake(); }
   };
@@ -50,7 +51,8 @@ export default function Scramble({ seed, onDone, onClose }: GameProps) {
   return (
     <ScreenBG>
       <View style={styles.wrap}>
-        <Header title="Scramble" subtitle="Unscramble the word" onClose={onClose} />
+        <Header title="Scramble" subtitle="Unscramble the word" onClose={onClose} right={<TimerBadge seconds={secs} />} />
+        <GameIntro text={games.scramble.desc} />
         {!!toast && <View style={styles.toast}><Text style={styles.toastT}>{toast}</Text></View>}
         <Text style={styles.hint}>{answer.length} letters</Text>
 
@@ -90,9 +92,9 @@ const styles = StyleSheet.create({
   hint: { color: C.textFaint, textAlign: "center", marginTop: 8, fontWeight: "600" },
   slots: { flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 30 },
   slot: { width: 54, height: 62, borderRadius: radius.sm, borderWidth: 2, alignItems: "center", justifyContent: "center" },
-  slotT: { color: "#fff", fontSize: 30, fontWeight: "800" },
+  slotT: { color: "#fff", fontSize: 28, fontWeight: "700", fontFamily: tileFont },
   pool: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 10, marginTop: 48 },
   chip: { width: 58, height: 66, borderRadius: radius.md, backgroundColor: C.surfaceHi, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: C.hairline },
   chipUsed: { backgroundColor: "transparent", borderStyle: "dashed" },
-  chipT: { color: "#fff", fontSize: 30, fontWeight: "800" },
+  chipT: { color: "#fff", fontSize: 28, fontWeight: "700", fontFamily: tileFont },
 });

@@ -1,16 +1,16 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
-import { ScreenBG, Header, GradientButton, GhostButton, haptic } from "../ui";
-import { palette as C, games, radius } from "../theme";
+import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, haptic } from "../ui";
+import { palette as C, games, radius, tileFont } from "../theme";
 import { pick, shuffle } from "../daily";
-import { blitzWordPts as pts } from "../scoring";
+import { blitzWordPts as pts, applyRestarts } from "../scoring";
 import { BLITZ_BASES, BLITZ_DICT } from "../wordbank";
 import { GameProps } from "./types";
 
 const G = games.blitz;
 const DURATION = 60;
 
-export default function Blitz({ seed, onDone, onClose }: GameProps) {
+export default function Blitz({ seed, onDone, onClose, restarts = 0 }: GameProps) {
   const letters = useMemo(() => shuffle(pick(BLITZ_BASES, seed).split(""), seed), [seed]);
   const [used, setUsed] = useState<number[]>([]);
   const [found, setFound] = useState<string[]>([]);
@@ -26,9 +26,9 @@ export default function Blitz({ seed, onDone, onClose }: GameProps) {
   useEffect(() => {
     if (time <= 0 && !finished.current) {
       finished.current = true; haptic.success();
-      onDone({ done: true, won: found.length > 0, score });
+      onDone({ done: true, won: found.length > 0, score: applyRestarts(score, restarts) });
     }
-  }, [time, score, found.length, onDone]);
+  }, [time, score, found.length, onDone, restarts]);
 
   const word = used.map((i) => letters[i]).join("");
   const flash = (m: string) => { setFlashMsg(m); setTimeout(() => setFlashMsg(""), 900); };
@@ -48,6 +48,7 @@ export default function Blitz({ seed, onDone, onClose }: GameProps) {
     <ScreenBG>
       <View style={styles.wrap}>
         <Header title="Blitz" subtitle="Most words in 60s" onClose={onClose} right={<Text style={styles.score}>{score}</Text>} />
+        <GameIntro text={games.blitz.desc} />
         <View style={styles.timerTrack}><View style={[styles.timerFill, { width: `${(time / DURATION) * 100}%`, backgroundColor: time <= 10 ? C.present : G.hue }]} /></View>
         <Text style={[styles.time, time <= 10 && { color: C.present }]}>{time}s</Text>
 
@@ -82,12 +83,12 @@ const styles = StyleSheet.create({
   timerFill: { height: 8, borderRadius: 4 },
   time: { color: C.textDim, textAlign: "center", fontWeight: "700", marginTop: 6 },
   current: { height: 60, alignItems: "center", justifyContent: "center", marginTop: 14 },
-  currentT: { color: C.text, fontSize: 34, fontWeight: "800", letterSpacing: 4 },
+  currentT: { color: C.text, fontSize: 32, fontWeight: "700", fontFamily: tileFont, letterSpacing: 4 },
   flash: { position: "absolute", right: 8, color: C.correct, fontWeight: "800", fontSize: 18 },
   tiles: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 9, marginTop: 8 },
   tile: { width: 52, height: 60, borderRadius: radius.md, backgroundColor: C.surfaceHi, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: C.hairline },
   tileUsed: { backgroundColor: "transparent", borderStyle: "dashed" },
-  tileT: { color: "#fff", fontSize: 26, fontWeight: "800" },
+  tileT: { color: "#fff", fontSize: 24, fontWeight: "700", fontFamily: tileFont },
   foundH: { color: C.textFaint, fontWeight: "700", marginTop: 16 },
   foundWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingBottom: 16 },
   foundChip: { backgroundColor: C.surface, paddingHorizontal: 12, paddingVertical: 7, borderRadius: radius.pill, borderWidth: 1, borderColor: C.hairline },

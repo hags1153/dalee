@@ -4,4 +4,5 @@ export type GameProps = {
   onDone: (r: GameResult) => void;
   onClose: () => void;
   existing?: GameResult;
+  restarts?: number; // times this game was restarted today (for the score penalty)
 };
