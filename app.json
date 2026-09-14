@@ -17,6 +17,7 @@
       "fallbackToCacheTimeout": 0
     },
     "ios": {
+      "appleTeamId": "86P3UP8S57",
       "supportsTablet": true,
       "bundleIdentifier": "com.racescan.dalee",
       "entitlements": {

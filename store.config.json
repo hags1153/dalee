@@ -49,9 +49,7 @@
       "unrestrictedWebAccess": false,
       "violenceCartoonOrFantasy": "NONE",
       "violenceRealistic": "NONE",
-      "violenceRealisticProlongedGraphicOrSadistic": "NONE",
-      "socialMedia": false,
-      "socialMediaAgeRestricted": false
+      "violenceRealisticProlongedGraphicOrSadistic": "NONE"
     }
   }
 }
