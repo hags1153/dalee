@@ -2,7 +2,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CIRCUIT, GameKey } from "./theme";
 import { COMPLETION_BONUS } from "./scoring";
 
-export type GameResult = { done: boolean; won: boolean; score: number; guesses?: number };
+export type GameResult = {
+  done: boolean;
+  won: boolean;
+  score: number;
+  guesses?: number;
+  seconds?: number;
+  wrong?: number;
+  hints?: number;
+  steps?: number;
+  wordsFound?: number;
+};
 // `opens` counts scored-game starts; opens-1 = restarts. `funOpens` rotates completed games into fresh non-scoring variants.
 export type DayState = {
   day: number;

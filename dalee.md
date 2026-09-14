@@ -26,17 +26,18 @@ All five are deterministic per day: the puzzle for a given date is derived from 
 
 ## Scoring system (`src/scoring.ts`)
 
-Big, satisfying numbers. Each game tops out around ~1,200; a clean full circuit clears well
-over 5,000 including the completion bonus.
+Big, satisfying numbers with a **100-point floor per game**. Odd penalty weights and fractional
+time decay make large leaderboards much less likely to tie.
 
-- **Wordle** — by guess count: 1→1200, 2→1000, 3→820, 4→640, 5→480, 6→320. Loss = 0.
-- **Scramble** — `max(200, 1000 − wrong·120 − hints·180)`.
-- **Ladder** — `max(350, 1150 − steps·80)` (shorter chain = more).
-- **Mini Crossword** — `max(200, 1000 − wrong·130 − hints·220)`.
-- **Blitz** — per word by length: 7+→250, 6→150, 5→90, 4→45, 3→20 (adds up fast in 60s).
+- **Wordle** — by guess count: 1→1600, 2→1390, 3→1215, 4→1035, 5→860, 6→690. Loss = 100.
+- **Scramble** — `max(100, 1325 − wrong·137 − hints·211)`.
+- **Ladder** — `max(100, 1200 − steps·5)` (extra rows are intentionally light-touch).
+- **Mini Crossword** — `max(100, 1375 − wrong·149 − hints·233)`.
+- **Blitz** — per word by length: 7+→271, 6→163, 5→97, 4→47, 3→23 (adds up fast in 60s).
 - **Completion bonus** — **+750** for finishing all five in a day.
-- **Time bonus** — up to **+300**, decaying to 0 by ~60s (`timeBonus`), added to Wordle/Scramble/
-  Ladder/Mini Crossword on solve. Blitz is inherently timed. A live ⏱ timer shows in each game header.
+- **Time bonus** — up to **+700**, decaying by **7.37 points/second** (`timeBonus`), added to
+  Wordle/Scramble/Ladder/Mini Crossword on solve. Blitz is inherently timed. A live timer shows
+  in each game header.
 - **Restart penalty** — **−100 per restart** (`applyRestarts`). `DayState.opens[game]` counts starts;
   `opens−1 = restarts`, passed into the game as the `restarts` prop and subtracted from the score.
 
@@ -188,6 +189,11 @@ Store screenshots live in `docs/screenshots/` and `screenshots/`.
 - **1.0.6 OTA 2026.09.14.5** — play-for-fun opens fresh non-scoring puzzle variants instead of
   replaying the completed daily scored puzzle. Uses `DayState.funOpens` so fun runs do not affect
   restart penalties.
+- **1.0.7** — formal App Store/TestFlight binary release containing all 1.0.6 OTA changes:
+  Mini Crossword, duplicate-free daily selection, 4 AM Eastern rollover, fresh play-for-fun variants,
+  live score controls, score breakdown result panels, fixed Continue-to-next-game navigation, Game
+  Center leaderboards/achievements/dashboard, and sharing. Keep `docs/version.json` minimum/latest
+  at 1.0.6 until this build is available in the App Store, then flip the gate to 1.0.7.
 
 ## Roadmap / fast-follow
 

@@ -121,6 +121,48 @@ def scramble(W,H):
     grad_box(img,[m+bw+int(12*s),by,W-m,by+int(52*s)],(124,58,237),(168,85,247)); ctext(d,m+bw+int(12*s)+bw/2,by+int(15*s),"Submit",f(int(16*s)),(255,255,255))
     return img
 
+def crossword(W,H):
+    img=bg(W,H); d=ImageDraw.Draw(img); s=W/430.0; m=int(W*0.06)
+    ctext(d,W/2,int(H*0.05),"Mini Crossword",f(int(24*s)),TXT); ctext(d,W/2,int(H*0.05)+int(30*s),"Solve the clues",f(int(13*s),False),FAINT)
+    # score + timer pills
+    d.rounded_rectangle([W-m-int(162*s),int(H*0.052),W-m-int(82*s),int(H*0.052)+int(28*s)],radius=int(14*s),fill=(45,35,24),outline=HAIR,width=1)
+    ctext(d,W-m-int(122*s),int(H*0.058),"★ 1,210",f(int(12*s)),PRESENT)
+    d.rounded_rectangle([W-m-int(76*s),int(H*0.052),W-m,int(H*0.052)+int(28*s)],radius=int(14*s),fill=SURF_HI,outline=HAIR,width=1)
+    ctext(d,W-m-int(38*s),int(H*0.058),"0:18",f(int(12*s)),TXT)
+    # active clue
+    cy=int(H*0.145)
+    d.rounded_rectangle([m,cy,W-m,cy+int(56*s)],radius=int(16*s),fill=SURF_HI,outline=GH["missing"],width=2)
+    ltext(d,m+int(16*s),cy+int(17*s),"2A",f(int(14*s)),GH["missing"])
+    ltext(d,m+int(54*s),cy+int(17*s),"You spend it",f(int(15*s)),TXT)
+    # board
+    grid=["LIGHT","E....","MONEY","O....","NORTH"]; fills=["LIGHT","E....","MON__",".....","....."]
+    cell=int(56*s); gap=2; bw=5*cell+4*gap; bx=(W-bw)//2; by=int(H*0.245)
+    nums={(0,0):"1",(2,0):"2",(4,0):"3"}
+    active={(2,c) for c in range(5)}
+    for r,row in enumerate(grid):
+        for c,ch in enumerate(row):
+            x=bx+c*(cell+gap); y=by+r*(cell+gap)
+            if ch==".":
+                d.rectangle([x,y,x+cell,y+cell],fill=BG_TOP)
+            else:
+                fill=(59,47,32) if (r,c) in active else SURF_HI
+                d.rectangle([x,y,x+cell,y+cell],fill=fill,outline=HAIR,width=1)
+                if (r,c)==(2,3): d.rectangle([x,y,x+cell,y+cell],outline=GH["missing"],width=4)
+                if (r,c) in nums: ltext(d,x+int(4*s),y+int(2*s),nums[(r,c)],f(int(9*s)),FAINT)
+                show=fills[r][c]
+                if show!="_" and show!=".": ctext(d,x+cell/2,y+int(13*s),show,f(int(26*s)),TXT)
+    # clues
+    clues=[("1A","Not heavy, or bright"),("2A","You spend it"),("3A","Compass point"),("1D","Sour yellow fruit")]
+    qy=by+bw+int(28*s)
+    for cid,clue in clues:
+        fill=SURF_HI if cid=="2A" else SURF
+        outline=GH["missing"] if cid=="2A" else HAIR
+        d.rounded_rectangle([m,qy,W-m,qy+int(44*s)],radius=int(12*s),fill=fill,outline=outline,width=2)
+        ltext(d,m+int(14*s),qy+int(12*s),cid,f(int(13*s)),GH["missing"])
+        ltext(d,m+int(56*s),qy+int(12*s),clue,f(int(13*s)),TXT)
+        qy+=int(52*s)
+    return img
+
 def blitz(W,H):
     img=bg(W,H); d=ImageDraw.Draw(img); s=W/430.0; m=int(W*0.06)
     ctext(d,W/2,int(H*0.05),"Blitz",f(int(24*s)),TXT); ctext(d,W/2,int(H*0.05)+int(30*s),"Most words in 60s",f(int(13*s),False),FAINT)
@@ -144,7 +186,7 @@ def blitz(W,H):
 
 os.makedirs("screenshots",exist_ok=True)
 SIZES={"iphone65":(1242,2688),"ipad13":(2064,2752)}
-SCREENS={"1hub":hub,"2wordle":wordle,"3scramble":scramble,"4blitz":blitz}
+SCREENS={"1hub":hub,"2wordle":wordle,"3scramble":scramble,"4crossword":crossword,"5blitz":blitz}
 n=0
 for nm,(W,H) in SIZES.items():
     for sn,fn in SCREENS.items():

@@ -11,13 +11,25 @@ export const LEADERBOARD_IDS: Record<LeaderboardPeriod, string> = {
 
 export const ACHIEVEMENT_IDS = {
   wordleWin: "com.racescan.dalee.achievement.wordle_win",
+  wordleAce: "com.racescan.dalee.achievement.wordle_ace",
+  wordleComeback: "com.racescan.dalee.achievement.wordle_comeback",
   scrambleWin: "com.racescan.dalee.achievement.scramble_win",
+  scrambleClean: "com.racescan.dalee.achievement.scramble_clean",
   ladderWin: "com.racescan.dalee.achievement.ladder_win",
+  ladderShort: "com.racescan.dalee.achievement.ladder_short",
   missingWin: "com.racescan.dalee.achievement.missing_win",
+  crosswordClean: "com.racescan.dalee.achievement.crossword_clean",
   blitzWin: "com.racescan.dalee.achievement.blitz_win",
+  blitzTen: "com.racescan.dalee.achievement.blitz_10_words",
+  blitzTwenty: "com.racescan.dalee.achievement.blitz_20_words",
   circuitComplete: "com.racescan.dalee.achievement.circuit_complete",
+  cleanCircuit: "com.racescan.dalee.achievement.clean_circuit",
+  threeDayStreak: "com.racescan.dalee.achievement.streak_3",
+  sevenDayStreak: "com.racescan.dalee.achievement.streak_7",
+  thirtyDayStreak: "com.racescan.dalee.achievement.streak_30",
   fiveThousand: "com.racescan.dalee.achievement.score_5000",
   sixThousand: "com.racescan.dalee.achievement.score_6000",
+  sevenThousand: "com.racescan.dalee.achievement.score_7000",
 } as const;
 
 const isIOS = Platform.OS === "ios";

@@ -65,7 +65,8 @@ export function Header({ title, subtitle, onClose, right }: { title: string; sub
 
 // Full stopwatch (M:SS), always shown so players can watch the clock.
 export function TimerBadge({ seconds }: { seconds: number }) {
-  const m = Math.floor(seconds / 60), s = seconds % 60;
+  const whole = Math.floor(seconds);
+  const m = Math.floor(whole / 60), s = whole % 60;
   return <View style={styles.timer}><Text style={styles.timerT}>⏱ {m}:{String(s).padStart(2, "0")}</Text></View>;
 }
 
@@ -153,9 +154,14 @@ export function ResultPanel({ title, detail, score, won, forFun, nextLabel, brea
 // Counts up once per second while `active`; resets nothing, just accumulates.
 export function useStopwatch(active: boolean) {
   const [seconds, setSeconds] = React.useState(0);
+  const startRef = React.useRef<number | null>(null);
   React.useEffect(() => {
-    if (!active) return;
-    const id = setInterval(() => setSeconds((s) => s + 1), 1000);
+    if (!active) {
+      startRef.current = null;
+      return;
+    }
+    if (startRef.current === null) startRef.current = Date.now() - seconds * 1000;
+    const id = setInterval(() => setSeconds((Date.now() - (startRef.current || Date.now())) / 1000), 250);
     return () => clearInterval(id);
   }, [active]);
   return seconds;

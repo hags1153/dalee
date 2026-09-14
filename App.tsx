@@ -26,6 +26,35 @@ const WIN_ACHIEVEMENTS: Record<GameKey, string> = {
   blitz: ACHIEVEMENT_IDS.blitzWin,
 };
 
+function resultAchievements(key: GameKey, result: GameResult) {
+  const ids = result.won ? [WIN_ACHIEVEMENTS[key]] : [];
+  if (key === "wordle" && result.won && result.guesses === 1) ids.push(ACHIEVEMENT_IDS.wordleAce);
+  if (key === "wordle" && result.won && result.guesses === 6) ids.push(ACHIEVEMENT_IDS.wordleComeback);
+  if (key === "scramble" && result.won && !result.wrong && !result.hints) ids.push(ACHIEVEMENT_IDS.scrambleClean);
+  if (key === "ladder" && result.won && (result.steps || 99) <= 4) ids.push(ACHIEVEMENT_IDS.ladderShort);
+  if (key === "missing" && result.won && !result.wrong && !result.hints) ids.push(ACHIEVEMENT_IDS.crosswordClean);
+  if (key === "blitz" && (result.wordsFound || 0) >= 10) ids.push(ACHIEVEMENT_IDS.blitzTen);
+  if (key === "blitz" && (result.wordsFound || 0) >= 20) ids.push(ACHIEVEMENT_IDS.blitzTwenty);
+  return ids;
+}
+
+function circuitAchievements(next: DayState, total: number, stats: Stats) {
+  const clean = CIRCUIT.every((key) => {
+    const result = next.results[key];
+    return result?.won && !result.wrong && !result.hints;
+  });
+  return [
+    ACHIEVEMENT_IDS.circuitComplete,
+    ...(clean ? [ACHIEVEMENT_IDS.cleanCircuit] : []),
+    ...(stats.streak >= 3 ? [ACHIEVEMENT_IDS.threeDayStreak] : []),
+    ...(stats.streak >= 7 ? [ACHIEVEMENT_IDS.sevenDayStreak] : []),
+    ...(stats.streak >= 30 ? [ACHIEVEMENT_IDS.thirtyDayStreak] : []),
+    ...(total >= 5000 ? [ACHIEVEMENT_IDS.fiveThousand] : []),
+    ...(total >= 6000 ? [ACHIEVEMENT_IDS.sixThousand] : []),
+    ...(total >= 7000 ? [ACHIEVEMENT_IDS.sevenThousand] : []),
+  ];
+}
+
 type Screen = { name: "hub" } | { name: "game"; key: GameKey } | { name: "signin" };
 
 export default function App() {
@@ -50,16 +79,13 @@ export default function App() {
     const merged = !prev || result.score > (prev.score || 0) ? result : prev;
     let next: DayState = { ...dayState, results: { ...dayState.results, [key]: merged } };
     setDayState(next); await saveDay(next);
-    if (result.won) reportAchievements([WIN_ACHIEVEMENTS[key]]);
+    reportAchievements(resultAchievements(key, result));
     if (circuitComplete(next)) {
-      setStats(await commitCircuit(day, next));
+      const committedStats = await commitCircuit(day, next);
+      setStats(committedStats);
       const total = dayTotal(next);
       submitDailyLeaderboardScore(total);
-      reportAchievements([
-        ACHIEVEMENT_IDS.circuitComplete,
-        ...(total >= 5000 ? [ACHIEVEMENT_IDS.fiveThousand] : []),
-        ...(total >= 6000 ? [ACHIEVEMENT_IDS.sixThousand] : []),
-      ]);
+      reportAchievements(circuitAchievements(next, total, committedStats));
     }
     const nextKey = CIRCUIT[CIRCUIT.indexOf(key) + 1];
     if (action === "next" && nextKey) {

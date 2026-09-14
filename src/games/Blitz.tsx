@@ -43,7 +43,7 @@ export default function Blitz({ seed, onDone, onClose, onGoNext, restarts = 0, f
           { label: "Word points", value: score, tone: "good" },
           ...(restarts ? [{ label: "Restart penalty", value: `-${restarts * 100}`, tone: "bad" as const }] : []),
         ],
-        payload: { done: true, won: found.length > 0, score: finalScore },
+        payload: { done: true, won: found.length > 0, score: finalScore, wordsFound: found.length },
       });
     }
   }, [time, score, found.length, restarts]);

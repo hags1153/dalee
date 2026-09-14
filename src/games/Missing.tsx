@@ -127,23 +127,24 @@ export default function Missing({ seed, onDone, onClose, onGoNext, restarts = 0,
       haptic.success();
       setState("won");
       const score = applyRestarts(missingScore(wrong, hints) + timeBonus(secs), restarts);
-      const rawPuzzleScore = 1000 - wrong * MISSING_WRONG - hints * MISSING_HINT;
+      const rawPuzzleScore = 1375 - wrong * MISSING_WRONG - hints * MISSING_HINT;
       const floorBoost = Math.max(0, missingScore(wrong, hints) - rawPuzzleScore);
-      flash(forFun ? `Solved in ${secs}s!` : `Solved in ${secs}s!  +${score}`, true);
+      const elapsed = Math.floor(secs);
+      flash(forFun ? `Solved in ${elapsed}s!` : `Solved in ${elapsed}s!  +${score}`, true);
       setResult({
         title: "Crossword Solved",
-        detail: `${entries.length} clues in ${secs}s`,
+        detail: `${entries.length} clues in ${elapsed}s`,
         score,
         won: true,
         breakdown: [
-          { label: "Base solve", value: 1000, tone: "good" },
+          { label: "Base solve", value: 1375, tone: "good" },
           ...(wrong ? [{ label: "Wrong submits", value: `-${wrong * MISSING_WRONG}`, tone: "bad" as const }] : []),
           ...(hints ? [{ label: "Hints", value: `-${hints * MISSING_HINT}`, tone: "bad" as const }] : []),
           ...(floorBoost ? [{ label: "Minimum floor", value: floorBoost, tone: "good" as const }] : []),
           { label: "Time bonus", value: timeBonus(secs), tone: "good" },
           ...(restarts ? [{ label: "Restart penalty", value: `-${restarts * 100}`, tone: "bad" as const }] : []),
         ],
-        payload: { done: true, won: true, score },
+        payload: { done: true, won: true, score, seconds: secs, wrong, hints },
       });
     } else {
       setWrong((w) => w + 1);

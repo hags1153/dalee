@@ -41,22 +41,23 @@ export default function Ladder({ seed, onDone, onClose, onGoNext, restarts = 0, 
       setState("won");
       const steps = nc.length - 1;
       const score = applyRestarts(ladderScore(steps) + timeBonus(secs), restarts);
-      const rawStepScore = 1150 - steps * 80;
+      const rawStepScore = 1200 - steps * 5;
       const floorBoost = Math.max(0, ladderScore(steps) - rawStepScore);
-      flash(forFun ? `${steps} steps · ${secs}s!` : `${steps} steps · ${secs}s!  +${score}`, true);
+      const elapsed = Math.floor(secs);
+      flash(forFun ? `${steps} steps · ${elapsed}s!` : `${steps} steps · ${elapsed}s!  +${score}`, true);
       setResult({
         title: "Ladder Complete",
         detail: `${start} to ${end} in ${steps} steps`,
         score,
         won: true,
         breakdown: [
-          { label: "Base solve", value: 1150, tone: "good" },
-          { label: "Steps", value: `-${steps * 80}`, tone: "bad" },
+          { label: "Base solve", value: 1200, tone: "good" },
+          { label: "Rows used", value: `-${steps * 5}`, tone: "bad" },
           ...(floorBoost ? [{ label: "Minimum floor", value: floorBoost, tone: "good" as const }] : []),
           { label: "Time bonus", value: timeBonus(secs), tone: "good" },
           ...(restarts ? [{ label: "Restart penalty", value: `-${restarts * 100}`, tone: "bad" as const }] : []),
         ],
-        payload: { done: true, won: true, score },
+        payload: { done: true, won: true, score, seconds: secs, steps },
       });
     }
   };

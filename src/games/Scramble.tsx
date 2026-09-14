@@ -48,23 +48,24 @@ export default function Scramble({ seed, onDone, onClose, onGoNext, restarts = 0
     if (built === answer) {
       haptic.success(); setState("won");
       const score = applyRestarts(scrambleScore(wrong, hints) + timeBonus(secs), restarts);
-      const rawPuzzleScore = 1000 - wrong * SCRAMBLE_WRONG - hints * SCRAMBLE_HINT;
+      const rawPuzzleScore = 1325 - wrong * SCRAMBLE_WRONG - hints * SCRAMBLE_HINT;
       const floorBoost = Math.max(0, scrambleScore(wrong, hints) - rawPuzzleScore);
-      flash(forFun ? `Nice, ${secs}s!` : `Nice, ${secs}s!  +${score}`, true);
+      const elapsed = Math.floor(secs);
+      flash(forFun ? `Nice, ${elapsed}s!` : `Nice, ${elapsed}s!  +${score}`, true);
       setResult({
         title: "Unscrambled",
-        detail: `${answer} in ${secs}s`,
+        detail: `${answer} in ${elapsed}s`,
         score,
         won: true,
         breakdown: [
-          { label: "Base solve", value: 1000, tone: "good" },
+          { label: "Base solve", value: 1325, tone: "good" },
           ...(wrong ? [{ label: "Wrong guesses", value: `-${wrong * SCRAMBLE_WRONG}`, tone: "bad" as const }] : []),
           ...(hints ? [{ label: "Hints", value: `-${hints * SCRAMBLE_HINT}`, tone: "bad" as const }] : []),
           ...(floorBoost ? [{ label: "Minimum floor", value: floorBoost, tone: "good" as const }] : []),
           { label: "Time bonus", value: timeBonus(secs), tone: "good" },
           ...(restarts ? [{ label: "Restart penalty", value: `-${restarts * 100}`, tone: "bad" as const }] : []),
         ],
-        payload: { done: true, won: true, score },
+        payload: { done: true, won: true, score, seconds: secs, wrong, hints },
       });
     } else { setWrong((w) => w + 1); doShake(); flash(`−${SCRAMBLE_WRONG} · wrong`); }
   };

@@ -2,7 +2,7 @@
   "configVersion": 0,
   "apple": {
     "copyright": "2026 Ryan Hagerty",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "release": {
       "automaticRelease": true
     },
@@ -27,8 +27,8 @@
           "brain",
           "vocabulary"
         ],
-        "promoText": "Game Center is here: daily, weekly, and yearly leaderboards, achievements, challenges, sharing, and the same five-game Dalee circuit every day.",
-        "releaseNotes": "Adds Game Center daily, weekly, and yearly leaderboards, achievements, native Game Center dashboard access, and score sharing while keeping the improved submit flow from the latest Dalee builds."
+        "promoText": "Mini Crossword joins the daily circuit, with tighter live scoring, fresh play-for-fun puzzles, Game Center leaderboards, achievements, and sharing.",
+        "releaseNotes": "Adds Mini Crossword, fresh play-for-fun puzzles, live score controls, per-game score breakdowns, smoother next-game navigation, duplicate-free daily puzzle selection, a 4 AM Eastern daily rollover, tighter tie-resistant scoring with a 100-point game floor, and expanded Game Center achievements."
       }
     },
     "advisory": {
