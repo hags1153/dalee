@@ -1,10 +1,14 @@
 import { GameResult } from "../storage";
+export type DoneAction = "home" | "next";
 export type GameProps = {
   seed: number;
-  onDone: (r: GameResult) => void;
+  onDone: (r: GameResult, action?: DoneAction) => void;
   onClose: () => void;
+  onGoNext?: () => void;
   existing?: GameResult;
   restarts?: number; // times this game was restarted today (for the score penalty)
   forFun?: boolean;  // replaying a game already completed today — don't change the score
   nextGameName?: string;
+  liveScoreVisible?: boolean;
+  onToggleLiveScore?: () => void;
 };

@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
-import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, FunBanner, PointsPill, ResultPanel, haptic } from "../ui";
+import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, FunBanner, LiveScoreToggle, ResultPanel, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { shuffle } from "../daily";
 import { blitzWordPts as pts, applyRestarts } from "../scoring";
@@ -11,7 +11,7 @@ import { GameProps } from "./types";
 const G = games.blitz;
 const DURATION = 60;
 
-export default function Blitz({ seed, onDone, onClose, restarts = 0, forFun = false, nextGameName }: GameProps) {
+export default function Blitz({ seed, onDone, onClose, onGoNext, restarts = 0, forFun = false, nextGameName, liveScoreVisible = true, onToggleLiveScore }: GameProps) {
   const letters = useMemo(() => shuffle(blitzLetters(seed).split(""), seed), [seed]);
   const [used, setUsed] = useState<number[]>([]);
   const [found, setFound] = useState<string[]>([]);
@@ -19,7 +19,7 @@ export default function Blitz({ seed, onDone, onClose, restarts = 0, forFun = fa
   const [time, setTime] = useState(DURATION);
   const [flashMsg, setFlashMsg] = useState("");
   const [state, setState] = useState<"ready" | "play" | "done">("ready");
-  const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; payload: Parameters<typeof onDone>[0] } | null>(null);
+  const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; breakdown: { label: string; value: number | string; tone?: "good" | "bad" | "neutral" }[]; payload: Parameters<typeof onDone>[0] } | null>(null);
   const finished = useRef(false);
   const liveScore = result?.score ?? applyRestarts(score, restarts);
 
@@ -39,6 +39,10 @@ export default function Blitz({ seed, onDone, onClose, restarts = 0, forFun = fa
         detail: `${found.length} words found`,
         score: finalScore,
         won: found.length > 0,
+        breakdown: [
+          { label: "Word points", value: score, tone: "good" },
+          ...(restarts ? [{ label: "Restart penalty", value: `-${restarts * 100}`, tone: "bad" as const }] : []),
+        ],
         payload: { done: true, won: found.length > 0, score: finalScore },
       });
     }
@@ -63,7 +67,7 @@ export default function Blitz({ seed, onDone, onClose, restarts = 0, forFun = fa
   return (
     <ScreenBG>
       <View style={styles.wrap}>
-        <Header title="Blitz" subtitle="Most words in 60s" onClose={onClose} right={<PointsPill points={liveScore} />} />
+        <Header title="Blitz" subtitle="Most words in 60s" onClose={onClose} right={<LiveScoreToggle points={liveScore} visible={liveScoreVisible} onToggle={onToggleLiveScore} />} />
         <GameIntro text={games.blitz.desc} />
         {forFun && <FunBanner />}
         {state === "ready" && (
@@ -95,7 +99,7 @@ export default function Blitz({ seed, onDone, onClose, restarts = 0, forFun = fa
         <ScrollView style={{ flex: 1, marginTop: 6 }} contentContainerStyle={styles.foundWrap}>
           {found.map((w) => <View key={w} style={styles.foundChip}><Text style={styles.foundT}>{w}</Text></View>)}
         </ScrollView>
-        {result && <ResultPanel title={result.title} detail={result.detail} score={result.score} won={result.won} forFun={forFun} nextLabel={nextGameName ? `Continue to ${nextGameName}` : "Continue"} onContinue={() => forFun ? onClose() : onDone(result.payload)} />}
+        {result && <ResultPanel title={result.title} detail={result.detail} score={result.score} won={result.won} forFun={forFun} breakdown={result.breakdown} nextLabel={nextGameName ? `Continue to ${nextGameName}` : "Continue"} onContinue={() => forFun ? onGoNext?.() || onClose() : onDone(result.payload, "next")} onHome={() => forFun ? onClose() : onDone(result.payload, "home")} />}
       </View>
     </ScreenBG>
   );

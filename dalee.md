@@ -182,6 +182,9 @@ Store screenshots live in `docs/screenshots/` and `screenshots/`.
 - **1.0.6 OTA 2026.09.14.3** — adds a live score pill to every game. Wordle, Scramble, Ladder,
   and Mini Crossword show current points-on-the-line including time decay, penalties, hints, and
   restarts; Blitz shows live net points. The score pill flashes soft red whenever points decrease.
+- **1.0.6 OTA 2026.09.14.4** — result panels now show per-game score breakdowns, add separate
+  Continue/Home actions, and Continue advances to the next game instead of returning to the Hub.
+  Adds a persistent live-score visibility toggle.
 
 ## Roadmap / fast-follow
 

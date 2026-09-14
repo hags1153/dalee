@@ -88,6 +88,22 @@ export function PointsPill({ points }: { points: number }) {
   );
 }
 
+export function LiveScoreToggle({ points, visible = true, onToggle }: { points: number; visible?: boolean; onToggle?: () => void }) {
+  if (!visible) {
+    return (
+      <Pressable onPress={() => { tap("light"); onToggle?.(); }} style={styles.scoreToggle}>
+        <Text style={styles.scoreToggleT}>Show Score</Text>
+      </Pressable>
+    );
+  }
+  return (
+    <Pressable onPress={() => { tap("light"); onToggle?.(); }} style={styles.scoreWrap}>
+      <PointsPill points={points} />
+      <Text style={styles.scoreHide}>Hide</Text>
+    </Pressable>
+  );
+}
+
 // Shown when replaying a game that's already done today.
 export function FunBanner() {
   return <View style={styles.funBanner}><Text style={styles.funT}>✓ Already completed today — playing for fun. This won't change your score.</Text></View>;
@@ -98,14 +114,18 @@ export function GameIntro({ text }: { text: string }) {
   return <Text style={styles.intro}>{text}</Text>;
 }
 
-export function ResultPanel({ title, detail, score, won, forFun, nextLabel, onContinue }: {
+export type ScoreLine = { label: string; value: number | string; tone?: "good" | "bad" | "neutral" };
+
+export function ResultPanel({ title, detail, score, won, forFun, nextLabel, breakdown, onContinue, onHome }: {
   title: string;
   detail: string;
   score: number;
   won: boolean;
   forFun?: boolean;
   nextLabel?: string;
+  breakdown?: ScoreLine[];
   onContinue: () => void;
+  onHome?: () => void;
 }) {
   return (
     <View style={styles.resultOverlay}>
@@ -113,7 +133,18 @@ export function ResultPanel({ title, detail, score, won, forFun, nextLabel, onCo
         <Text style={[styles.resultTitle, { color: won ? C.correct : C.present }]}>{title}</Text>
         <Text style={styles.resultDetail}>{detail}</Text>
         <Text style={styles.resultScore}>{forFun ? "For fun" : `+${score.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`}</Text>
+        {!!breakdown?.length && (
+          <View style={styles.breakdown}>
+            {breakdown.map((line) => (
+              <View key={line.label} style={styles.breakdownRow}>
+                <Text style={styles.breakdownLabel}>{line.label}</Text>
+                <Text style={[styles.breakdownValue, line.tone === "good" && styles.breakdownGood, line.tone === "bad" && styles.breakdownBad]}>{typeof line.value === "number" && line.value > 0 ? `+${line.value}` : line.value}</Text>
+              </View>
+            ))}
+          </View>
+        )}
         <GradientButton label={nextLabel || "Continue"} onPress={onContinue} />
+        <GhostButton label="Go to Home" onPress={onHome} style={{ alignSelf: "stretch" }} />
       </View>
     </View>
   );
@@ -186,6 +217,10 @@ const styles = StyleSheet.create({
   points: { backgroundColor: C.accent + "22", paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, overflow: "hidden" },
   pointsDrop: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: "rgba(244,63,94,0.36)" },
   pointsT: { color: C.accentSoft, fontSize: 14, fontWeight: "800", zIndex: 1 },
+  scoreWrap: { flexDirection: "row", alignItems: "center", gap: 5 },
+  scoreHide: { color: C.textFaint, fontSize: 11, fontWeight: "800" },
+  scoreToggle: { backgroundColor: C.surfaceHi, paddingHorizontal: 9, paddingVertical: 6, borderRadius: radius.pill, borderWidth: 1, borderColor: C.hairline },
+  scoreToggleT: { color: C.textDim, fontSize: 11, fontWeight: "800" },
   intro: { color: C.textDim, fontSize: 13.5, lineHeight: 19, textAlign: "center", marginTop: 10, paddingHorizontal: 10 },
   funBanner: { backgroundColor: C.present + "1F", borderColor: C.present + "66", borderWidth: 1, borderRadius: radius.md, paddingVertical: 9, paddingHorizontal: 14, marginTop: 10 },
   funT: { color: C.present, fontSize: 12.5, fontWeight: "700", textAlign: "center", lineHeight: 17 },
@@ -194,4 +229,10 @@ const styles = StyleSheet.create({
   resultTitle: { fontSize: 26, fontWeight: "900", textAlign: "center" },
   resultDetail: { color: C.textDim, fontSize: 15, lineHeight: 21, textAlign: "center", fontWeight: "600" },
   resultScore: { color: C.text, fontSize: 42, fontWeight: "900", textAlign: "center" },
+  breakdown: { alignSelf: "stretch", backgroundColor: C.bg1, borderRadius: radius.md, borderWidth: 1, borderColor: C.hairline, paddingVertical: 8 },
+  breakdownRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 12, paddingVertical: 5 },
+  breakdownLabel: { color: C.textDim, fontSize: 13, fontWeight: "700" },
+  breakdownValue: { color: C.text, fontSize: 13, fontWeight: "900" },
+  breakdownGood: { color: C.correct },
+  breakdownBad: { color: C.present },
 });

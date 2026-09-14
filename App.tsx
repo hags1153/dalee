@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { palette as C, CIRCUIT, GameKey, games } from "./src/theme";
 import { dayIndex, seedFor } from "./src/daily";
-import { DayState, Stats, GameResult, loadDay, saveDay, loadStats, commitCircuit, circuitComplete, dayTotal } from "./src/storage";
+import { DayState, Stats, GameResult, Settings, loadDay, saveDay, loadStats, commitCircuit, circuitComplete, dayTotal, loadSettings, saveSettings } from "./src/storage";
 import { ACHIEVEMENT_IDS, LeaderboardPeriod, reportAchievements, submitDailyLeaderboardScore, showAchievements, showGameCenterDashboard, showLeaderboard } from "./src/gameCenter";
 import Hub from "./src/Hub";
 import SignIn from "./src/SignIn";
@@ -12,7 +12,7 @@ import Scramble from "./src/games/Scramble";
 import Ladder from "./src/games/Ladder";
 import Missing from "./src/games/Missing";
 import Blitz from "./src/games/Blitz";
-import { GameProps } from "./src/games/types";
+import { DoneAction, GameProps } from "./src/games/types";
 import { UpdateRequired, useVersionGate } from "./src/VersionGate";
 
 const GAMES: Record<GameKey, React.ComponentType<GameProps>> = {
@@ -34,14 +34,21 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>({ name: "hub" });
   const [dayState, setDayState] = useState<DayState>({ day, results: {} });
   const [stats, setStats] = useState<Stats | null>(null);
+  const [settings, setSettings] = useState<Settings>({ liveScoreVisible: true });
 
-  useEffect(() => { (async () => { setDayState(await loadDay(day)); setStats(await loadStats()); })(); }, [day]);
+  useEffect(() => { (async () => { setDayState(await loadDay(day)); setStats(await loadStats()); setSettings(await loadSettings()); })(); }, [day]);
 
-  const onDone = useCallback(async (key: GameKey, result: GameResult) => {
+  const toggleLiveScore = useCallback(async () => {
+    const next = { ...settings, liveScoreVisible: !settings.liveScoreVisible };
+    setSettings(next);
+    await saveSettings(next);
+  }, [settings]);
+
+  const onDone = useCallback(async (key: GameKey, result: GameResult, action: DoneAction = "home") => {
     const prev = dayState.results[key];
     // keep the best score if replayed
     const merged = !prev || result.score > (prev.score || 0) ? result : prev;
-    const next: DayState = { ...dayState, results: { ...dayState.results, [key]: merged } };
+    let next: DayState = { ...dayState, results: { ...dayState.results, [key]: merged } };
     setDayState(next); await saveDay(next);
     if (result.won) reportAchievements([WIN_ACHIEVEMENTS[key]]);
     if (circuitComplete(next)) {
@@ -54,7 +61,17 @@ export default function App() {
         ...(total >= 6000 ? [ACHIEVEMENT_IDS.sixThousand] : []),
       ]);
     }
-    setScreen({ name: "hub" });
+    const nextKey = CIRCUIT[CIRCUIT.indexOf(key) + 1];
+    if (action === "next" && nextKey) {
+      if (!next.results[nextKey]?.done) {
+        next = { ...next, opens: { ...next.opens, [nextKey]: (next.opens?.[nextKey] ?? 0) + 1 } };
+        setDayState(next);
+        await saveDay(next);
+      }
+      setScreen({ name: "game", key: nextKey });
+    } else {
+      setScreen({ name: "hub" });
+    }
   }, [dayState, day]);
 
   // Opening a not-yet-finished game counts as a start; the 2nd+ start is a restart.
@@ -76,14 +93,17 @@ export default function App() {
   if (screen.name === "game") {
     const Game = GAMES[screen.key];
     const idx = CIRCUIT.indexOf(screen.key);
-    const nextGameName = CIRCUIT[idx + 1] ? games[CIRCUIT[idx + 1]].name : "Hub";
+    const nextKey = CIRCUIT[idx + 1];
+    const nextGameName = nextKey ? games[nextKey].name : "Hub";
     const restarts = Math.max(0, (dayState.opens?.[screen.key] ?? 1) - 1);
     const forFun = !!dayState.results[screen.key]?.done;
     return (
       <>
         <StatusBar style="light" />
         <Game seed={seedFor(idx + 1)} existing={dayState.results[screen.key]} restarts={restarts} forFun={forFun} nextGameName={nextGameName}
-          onDone={(r) => onDone(screen.key, r)} onClose={() => setScreen({ name: "hub" })} />
+          liveScoreVisible={settings.liveScoreVisible} onToggleLiveScore={toggleLiveScore}
+          onGoNext={() => nextKey ? openGame(nextKey) : setScreen({ name: "hub" })}
+          onDone={(r, action) => onDone(screen.key, r, action)} onClose={() => setScreen({ name: "hub" })} />
       </>
     );
   }

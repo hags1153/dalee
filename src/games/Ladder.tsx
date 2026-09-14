@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef } from "react";
 import { View, Text, StyleSheet, Animated, ScrollView } from "react-native";
-import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, PointsPill, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
+import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, LiveScoreToggle, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { ladderScore, timeBonus, applyRestarts } from "../scoring";
 import { DICT4 } from "../wordbank";
@@ -11,8 +11,8 @@ const G = games.ladder;
 const diffOne = (a: string, b: string) => { let d = 0; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++; return d === 1; };
 const matchCount = (a: string, b: string) => { let m = 0; for (let i = 0; i < a.length; i++) if (a[i] === b[i]) m++; return m; };
 
-export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = false, nextGameName }: GameProps) {
-  const finish = (r: Parameters<typeof onDone>[0]) => (forFun ? onClose() : onDone(r));
+export default function Ladder({ seed, onDone, onClose, onGoNext, restarts = 0, forFun = false, nextGameName, liveScoreVisible = true, onToggleLiveScore }: GameProps) {
+  const finish = (r: Parameters<typeof onDone>[0], action: "home" | "next" = "home") => (forFun ? (action === "next" ? onGoNext?.() || onClose() : onClose()) : onDone(r, action));
   const puzzle = useMemo(() => ladderPuzzle(seed), [seed]);
   const start = puzzle.start.toUpperCase(), end = puzzle.end.toUpperCase();
   const [chain, setChain] = useState<string[]>([start]);
@@ -20,7 +20,7 @@ export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = f
   const [toast, setToast] = useState("");
   const [win, setWin] = useState(false);
   const [state, setState] = useState<"play" | "won">("play");
-  const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; payload: Parameters<typeof onDone>[0] } | null>(null);
+  const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; breakdown: { label: string; value: number | string; tone?: "good" | "bad" | "neutral" }[]; payload: Parameters<typeof onDone>[0] } | null>(null);
   const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
   const liveScore = result?.score ?? applyRestarts(ladderScore(chain.length) + timeBonus(secs), restarts);
@@ -41,8 +41,23 @@ export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = f
       setState("won");
       const steps = nc.length - 1;
       const score = applyRestarts(ladderScore(steps) + timeBonus(secs), restarts);
+      const rawStepScore = 1150 - steps * 80;
+      const floorBoost = Math.max(0, ladderScore(steps) - rawStepScore);
       flash(forFun ? `${steps} steps · ${secs}s!` : `${steps} steps · ${secs}s!  +${score}`, true);
-      setResult({ title: "Ladder Complete", detail: `${start} to ${end} in ${steps} steps`, score, won: true, payload: { done: true, won: true, score } });
+      setResult({
+        title: "Ladder Complete",
+        detail: `${start} to ${end} in ${steps} steps`,
+        score,
+        won: true,
+        breakdown: [
+          { label: "Base solve", value: 1150, tone: "good" },
+          { label: "Steps", value: `-${steps * 80}`, tone: "bad" },
+          ...(floorBoost ? [{ label: "Minimum floor", value: floorBoost, tone: "good" as const }] : []),
+          { label: "Time bonus", value: timeBonus(secs), tone: "good" },
+          ...(restarts ? [{ label: "Restart penalty", value: `-${restarts * 100}`, tone: "bad" as const }] : []),
+        ],
+        payload: { done: true, won: true, score },
+      });
     }
   };
   const onKey = (k: string) => { if (state !== "play") return; if (k === "↵") return submit(); if (k === "⌫") return setCur((c) => c.slice(0, -1)); if (/[A-Z]/.test(k) && cur.length < 4) setCur((c) => c + k); };
@@ -67,7 +82,7 @@ export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = f
   return (
     <ScreenBG>
       <View style={styles.wrap}>
-        <Header title="Ladder" subtitle="Change one letter at a time" onClose={onClose} right={<><PointsPill points={liveScore} /><TimerBadge seconds={secs} /></>} />
+        <Header title="Ladder" subtitle="Change one letter at a time" onClose={onClose} right={<><LiveScoreToggle points={liveScore} visible={liveScoreVisible} onToggle={onToggleLiveScore} /><TimerBadge seconds={secs} /></>} />
         <GameIntro text={games.ladder.desc} />
         {forFun && <FunBanner />}
         <View style={styles.goal}><Text style={styles.goalT}>{start}</Text><Text style={styles.arrow}>→</Text><Text style={[styles.goalT, { color: C.correct }]}>{end}</Text></View>
@@ -81,7 +96,7 @@ export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = f
           <GradientButton label="SUBMIT" colors={G.grad as any} onPress={submit} disabled={cur.length !== 4 || state !== "play"} />
           <Keyboard onKey={onKey} showEnter={false} />
         </View>
-        {result && <ResultPanel title={result.title} detail={result.detail} score={result.score} won={result.won} forFun={forFun} nextLabel={nextGameName ? `Continue to ${nextGameName}` : "Continue"} onContinue={() => finish(result.payload)} />}
+        {result && <ResultPanel title={result.title} detail={result.detail} score={result.score} won={result.won} forFun={forFun} breakdown={result.breakdown} nextLabel={nextGameName ? `Continue to ${nextGameName}` : "Continue"} onContinue={() => finish(result.payload, "next")} onHome={() => finish(result.payload, "home")} />}
       </View>
     </ScreenBG>
   );

@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef, useCallback } from "react";
 import { View, Text, StyleSheet, Animated, Dimensions } from "react-native";
-import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, PointsPill, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
+import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, LiveScoreToggle, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { wordleScore, timeBonus, applyRestarts } from "../scoring";
 import { DICT5 } from "../wordbank";
@@ -23,8 +23,8 @@ function evaluate(guess: string, answer: string): St[] {
 }
 const col = (s: St) => s === "correct" ? C.correct : s === "present" ? C.present : C.absent;
 
-export default function Wordle({ seed, onDone, onClose, restarts = 0, forFun = false, nextGameName }: GameProps) {
-  const finish = (r: Parameters<typeof onDone>[0]) => (forFun ? onClose() : onDone(r));
+export default function Wordle({ seed, onDone, onClose, onGoNext, restarts = 0, forFun = false, nextGameName, liveScoreVisible = true, onToggleLiveScore }: GameProps) {
+  const finish = (r: Parameters<typeof onDone>[0], action: "home" | "next" = "home") => (forFun ? (action === "next" ? onGoNext?.() || onClose() : onClose()) : onDone(r, action));
   const answer = useMemo(() => wordleAnswer(seed), [seed]);
   const [guesses, setGuesses] = useState<string[]>([]);
   const [evals, setEvals] = useState<St[][]>([]);
@@ -32,7 +32,7 @@ export default function Wordle({ seed, onDone, onClose, restarts = 0, forFun = f
   const [state, setState] = useState<"play" | "won" | "lost">("play");
   const [toast, setToast] = useState("");
   const [win, setWin] = useState(false);
-  const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; payload: Parameters<typeof onDone>[0] } | null>(null);
+  const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; breakdown: { label: string; value: number | string; tone?: "good" | "bad" | "neutral" }[]; payload: Parameters<typeof onDone>[0] } | null>(null);
   const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
   const liveScore = result?.score ?? (state === "lost" ? 0 : applyRestarts(wordleScore(Math.min(guesses.length + 1, MAX), true) + timeBonus(secs), restarts));
@@ -60,12 +60,23 @@ export default function Wordle({ seed, onDone, onClose, restarts = 0, forFun = f
       const score = applyRestarts(wordleScore(ng.length, true) + timeBonus(secs), restarts);
       setState("won");
       flash(forFun ? `Solved in ${secs}s!` : `Solved in ${secs}s!  +${score}`, true);
-      setResult({ title: "Solved", detail: `${ng.length}/6 guesses in ${secs}s`, score, won: true, payload: { done: true, won: true, score, guesses: ng.length } });
+      setResult({
+        title: "Solved",
+        detail: `${ng.length}/6 guesses in ${secs}s`,
+        score,
+        won: true,
+        breakdown: [
+          { label: "Guess score", value: wordleScore(ng.length, true), tone: "good" },
+          { label: "Time bonus", value: timeBonus(secs), tone: "good" },
+          ...(restarts ? [{ label: "Restart penalty", value: `-${restarts * 100}`, tone: "bad" as const }] : []),
+        ],
+        payload: { done: true, won: true, score, guesses: ng.length },
+      });
     } else if (lost) {
       haptic.error();
       setState("lost");
       flash(answer);
-      setResult({ title: "Answer revealed", detail: `The word was ${answer}`, score: 0, won: false, payload: { done: true, won: false, score: 0, guesses: MAX } });
+      setResult({ title: "Answer revealed", detail: `The word was ${answer}`, score: 0, won: false, breakdown: [{ label: "Puzzle score", value: "0", tone: "bad" }], payload: { done: true, won: false, score: 0, guesses: MAX } });
     }
   }, [state, cur, answer, guesses, evals, secs, restarts, forFun]);
 
@@ -84,7 +95,7 @@ export default function Wordle({ seed, onDone, onClose, restarts = 0, forFun = f
   return (
     <ScreenBG>
       <View style={styles.wrap}>
-        <Header title="Wordle" subtitle="Guess the 5-letter word" onClose={onClose} right={<><PointsPill points={liveScore} /><TimerBadge seconds={secs} /></>} />
+        <Header title="Wordle" subtitle="Guess the 5-letter word" onClose={onClose} right={<><LiveScoreToggle points={liveScore} visible={liveScoreVisible} onToggle={onToggleLiveScore} /><TimerBadge seconds={secs} /></>} />
         <GameIntro text={games.wordle.desc} />
         {forFun && <FunBanner />}
         {!!toast && <View style={[styles.toast, win && styles.toastWin]}><Text style={[styles.toastT, win && styles.toastTWin]}>{toast}</Text></View>}
@@ -112,7 +123,7 @@ export default function Wordle({ seed, onDone, onClose, restarts = 0, forFun = f
           <GradientButton label="SUBMIT" colors={G.grad as any} onPress={submit} disabled={cur.length !== LEN || state !== "play"} />
           <Keyboard onKey={onKey} statuses={keyStatuses} showEnter={false} />
         </View>
-        {result && <ResultPanel title={result.title} detail={result.detail} score={result.score} won={result.won} forFun={forFun} nextLabel={nextGameName ? `Continue to ${nextGameName}` : "Continue"} onContinue={() => finish(result.payload)} />}
+        {result && <ResultPanel title={result.title} detail={result.detail} score={result.score} won={result.won} forFun={forFun} breakdown={result.breakdown} nextLabel={nextGameName ? `Continue to ${nextGameName}` : "Continue"} onContinue={() => finish(result.payload, "next")} onHome={() => finish(result.payload, "home")} />}
       </View>
     </ScreenBG>
   );

@@ -9,8 +9,10 @@ export type Stats = {
   streak: number; maxStreak: number; circuitsCompleted: number;
   lastCircuitDay: number; totalScore: number; gamesPlayed: number; bestDay: number;
 };
+export type Settings = { liveScoreVisible: boolean };
 
 const emptyStats = (): Stats => ({ streak: 0, maxStreak: 0, circuitsCompleted: 0, lastCircuitDay: -999, totalScore: 0, gamesPlayed: 0, bestDay: 0 });
+const defaultSettings = (): Settings => ({ liveScoreVisible: true });
 
 export async function loadDay(day: number): Promise<DayState> {
   try { const s = await AsyncStorage.getItem(`day:${day}`); if (s) return JSON.parse(s); } catch {}
@@ -25,6 +27,13 @@ export async function loadStats(): Promise<Stats> {
 }
 export async function saveStats(s: Stats) {
   try { await AsyncStorage.setItem("stats", JSON.stringify(s)); } catch {}
+}
+export async function loadSettings(): Promise<Settings> {
+  try { const s = await AsyncStorage.getItem("settings"); if (s) return { ...defaultSettings(), ...JSON.parse(s) }; } catch {}
+  return defaultSettings();
+}
+export async function saveSettings(s: Settings) {
+  try { await AsyncStorage.setItem("settings", JSON.stringify(s)); } catch {}
 }
 
 export const circuitComplete = (d: DayState) => CIRCUIT.every((g) => d.results[g]?.done);
