@@ -98,7 +98,8 @@ src/
 `expo-updates` is installed and configured (added in 1.0.4). JS-only changes can ship
 **over-the-air** without a new binary:
 
-- `app.json`: `updates.url = https://u.expo.dev/8a4896a9-…`, `runtimeVersion.policy = "appVersion"`.
+- `app.json`: `updates.enabled = true`, `updates.checkAutomatically = "ON_LOAD"`,
+  `updates.url = https://u.expo.dev/8a4896a9-…`, `runtimeVersion.policy = "appVersion"`.
 - `eas.json`: production profile → `channel: "production"` (preview → `"preview"`).
 - Channel **production** is linked to branch **production**.
 - Push an update: `eas update --branch production --message "…"`.
@@ -106,6 +107,16 @@ src/
   `appVersion` policy, runtime = the app version string — so an update published now reaches **1.0.4**
   builds. Bumping the native version (e.g. to 1.0.5) requires a new build before OTA resumes for it.
 - Native changes (new packages, permissions, config plugins) still require a full EAS build + submit.
+- App launch also runs `src/VersionGate.tsx`, which checks for OTA updates immediately and fetches
+  `https://hags1153.github.io/dalee/version.json`. If the installed `APP_VERSION` is below
+  `minimumVersion`/`latestVersion`, Dalee shows an App Store update screen before gameplay. Keep
+  `src/version.ts` and `docs/version.json` in sync when controlling releases.
+
+Versioning rules:
+- JS-only OTA: keep `app.json` `expo.version` unchanged so the update targets the current binary
+  runtime; bump only `CONTENT_VERSION` in `src/version.ts` and `docs/version.json`.
+- Native/App Store release: bump `app.json` `expo.version`, `package.json`, `store.config.json`,
+  `APP_VERSION`, and `docs/version.json` `latestVersion`/`minimumVersion`, then build and submit.
 
 ## Build & submit (non-interactive from this box)
 
@@ -155,10 +166,17 @@ Store screenshots live in `docs/screenshots/` and `screenshots/`.
   `v1.0.5`. NOTE: the live "points on the line" pill (`PointsPill`) is intentional — a later
   "remove real-time results" request turned out to be meant for a different app and was reverted, so
   the pill stays. Don't remove it unless asked specifically about Dalee.
+- **1.0.6** — adds Apple Game Center entitlement + native leaderboard support. Completed daily
+  circuit scores submit to daily/weekly recurring leaderboards plus a yearly/season leaderboard
+  (`com.racescan.dalee.daily_recurring_score`, `com.racescan.dalee.weekly_recurring_score`,
+  `com.racescan.dalee.yearly_score`), and the Hub/Your Dalee screens can open each
+  native leaderboard UI. Also adds Game Center achievements, native Game
+  Center dashboard/achievements entry points, and iOS share-sheet score sharing. Keeps the 1.0.2+
+  dedicated Wordle SUBMIT flow that corrected the App Review complaint against the older 1.0.0 build.
 
 ## Roadmap / fast-follow
 
-- Real SSO (Apple Sign-In + Google) + cloud sync + leaderboards → flips App Privacy to
-  "data collected"; needs credentials + a backend.
+- Cross-device account sync remains a fast-follow. Game Center leaderboards are native-only and
+  do not require Dalee to collect account data.
 - Daily reminder push notifications (needs Push capability + expo-notifications).
 - Submit the circuit to the App Store once 1.0 clears review and testing is done (see task #20).

@@ -2,16 +2,17 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
 import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, FunBanner, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
-import { pick, shuffle } from "../daily";
+import { shuffle } from "../daily";
 import { blitzWordPts as pts, applyRestarts } from "../scoring";
-import { BLITZ_BASES, BLITZ_DICT } from "../wordbank";
+import { BLITZ_DICT } from "../wordbank";
+import { blitzLetters } from "../puzzles";
 import { GameProps } from "./types";
 
 const G = games.blitz;
 const DURATION = 60;
 
 export default function Blitz({ seed, onDone, onClose, restarts = 0, forFun = false }: GameProps) {
-  const letters = useMemo(() => shuffle(pick(BLITZ_BASES, seed).split(""), seed), [seed]);
+  const letters = useMemo(() => shuffle(blitzLetters(seed).split(""), seed), [seed]);
   const [used, setUsed] = useState<number[]>([]);
   const [found, setFound] = useState<string[]>([]);
   const [score, setScore] = useState(0);

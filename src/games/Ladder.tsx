@@ -2,9 +2,9 @@ import React, { useMemo, useState, useRef } from "react";
 import { View, Text, StyleSheet, Animated, ScrollView } from "react-native";
 import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, FunBanner, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
-import { pick } from "../daily";
 import { ladderScore, timeBonus, applyRestarts } from "../scoring";
-import { LADDERS, DICT4 } from "../wordbank";
+import { DICT4 } from "../wordbank";
+import { ladderPuzzle } from "../puzzles";
 import { GameProps } from "./types";
 
 const G = games.ladder;
@@ -13,7 +13,7 @@ const matchCount = (a: string, b: string) => { let m = 0; for (let i = 0; i < a.
 
 export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = false }: GameProps) {
   const finish = (r: Parameters<typeof onDone>[0]) => (forFun ? onClose() : onDone(r));
-  const puzzle = useMemo(() => pick(LADDERS, seed), [seed]);
+  const puzzle = useMemo(() => ladderPuzzle(seed), [seed]);
   const start = puzzle.start.toUpperCase(), end = puzzle.end.toUpperCase();
   const [chain, setChain] = useState<string[]>([start]);
   const [cur, setCur] = useState("");

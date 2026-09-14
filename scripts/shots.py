@@ -34,17 +34,32 @@ def hub(W,H):
     ctext(d,W-m-int(22*s),y+int(9*s),"@",f(int(20*s)),DIM)
     # stat strip
     sy=y+int(80*s); d.rounded_rectangle([m,sy,W-m,sy+int(78*s)],radius=int(20*s),fill=SURF,outline=HAIR,width=2)
-    labels=[("STREAK","12"),("TODAY","3/5"),("BEST","24")]; colw=(W-2*m)/3
+    labels=[("STREAK","12"),("SCORE","4,820"),("BEST","6,140")]; colw=(W-2*m)/3
     for i,(lab,val) in enumerate(labels):
         cx=m+colw*i+colw/2; ctext(d,cx,sy+int(16*s),val,f(int(24*s)),TXT); ctext(d,cx,sy+int(48*s),lab,f(int(11*s)),FAINT)
         if i: d.line([(m+colw*i,sy+int(14*s)),(m+colw*i,sy+int(64*s))],fill=HAIR)
+    # Game Center actions
+    ly=sy+int(96*s); d.rounded_rectangle([m,ly,W-m,ly+int(154*s)],radius=int(20*s),fill=SURF,outline=HAIR,width=2)
+    ltext(d,m+int(18*s),ly+int(18*s),"Game Center",f(int(18*s)),TXT)
+    ltext(d,m+int(18*s),ly+int(46*s),"Leaderboards, achievements, challenges, and sharing",f(int(12*s),False),FAINT)
+    actions=[("Daily",CORRECT),("Weekly",GH["ladder"]),("Yearly",PRESENT)]
+    ax=m+int(18*s); ay=ly+int(78*s); aw=int((W-2*m-int(52*s))/3); ah=int(28*s)
+    for name,color in actions:
+        d.rounded_rectangle([ax,ay,ax+aw,ay+ah],radius=int(14*s),fill=color)
+        ctext(d,ax+aw/2,ay+int(6*s),name,f(int(11*s)),(255,255,255))
+        ax+=aw+int(8*s)
+    qx=m+int(18*s); qy=ly+int(114*s); qw=int((W-2*m-int(46*s))/3)
+    for name in ["Share","Awards","Dashboard"]:
+        d.rounded_rectangle([qx,qy,qx+qw,qy+int(28*s)],radius=int(14*s),fill=SURF_HI,outline=HAIR,width=1)
+        ctext(d,qx+qw/2,qy+int(6*s),name,f(int(10*s)),DIM)
+        qx+=qw+int(8*s)
     # circuit header
-    cy=sy+int(110*s); ltext(d,m,cy,"Today's Circuit",f(int(26*s)),TXT);
-    b=d.textbbox((0,0),"~25 min · 5 games",font=f(int(13*s),False)); ltext(d,W-m-(b[2]-b[0]),cy+int(14*s),"~25 min · 5 games",f(int(13*s),False),FAINT)
+    cy=ly+int(180*s); ltext(d,m,cy,"Today's Circuit",f(int(26*s)),TXT);
+    b=d.textbbox((0,0),"5/5 complete",font=f(int(13*s),False)); ltext(d,W-m-(b[2]-b[0]),cy+int(14*s),"5/5 complete",f(int(13*s),False),CORRECT)
     # cards
     games=[("1. Wordle","Guess the word","wordle","+90",True),("2. Scramble","Unscramble it","scramble","+80",True),
-           ("3. Ladder","One letter at a time","ladder","+70",True),("4. Missing","Fill the blanks","missing","",False),
-           ("5. Blitz","60-second word rush","blitz","",False)]
+           ("3. Ladder","One letter at a time","ladder","+70",True),("4. Missing","Fill the blanks","missing","+85",True),
+           ("5. Blitz","60-second word rush","blitz","+120",True)]
     gy=cy+int(52*s); ch=int(78*s); gap=int(12*s)
     for name,tag,key,score,done in games:
         d.rounded_rectangle([m,gy,W-m,gy+ch],radius=int(20*s),fill=SURF,outline=(CORRECT if done else HAIR),width=2)
@@ -58,9 +73,11 @@ def hub(W,H):
             ctext(d,W-m-int(14*s)-pw/2,gy+int(29*s),score,pill,CORRECT)
         else: ltext(d,W-m-int(28*s),gy+int(18*s),">",f(int(30*s),False),FAINT)
         gy+=ch+gap
-    # CTA
-    cty=gy+int(10*s); grad_box(img,[m,cty,W-m,cty+int(58*s)],(124,92,255),(91,141,239))
-    ctext(d,W/2,cty+int(16*s),"Continue  →  Missing",f(int(18*s)),(255,255,255))
+    # CTA when there is enough room on the selected screenshot size.
+    cty=gy+int(10*s)
+    if cty+int(58*s) <= H-m:
+        grad_box(img,[m,cty,W-m,cty+int(58*s)],(124,92,255),(91,141,239))
+        ctext(d,W/2,cty+int(16*s),"Submit Score to Game Center",f(int(18*s)),(255,255,255))
     return img
 
 def wordle(W,H):

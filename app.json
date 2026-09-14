@@ -2,7 +2,7 @@
   "expo": {
     "name": "Dalee",
     "slug": "dalee",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -11,12 +11,17 @@
       "policy": "appVersion"
     },
     "updates": {
+      "enabled": true,
       "url": "https://u.expo.dev/8a4896a9-9612-4fe7-a544-8bb12ac5ed87",
+      "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.racescan.dalee",
+      "entitlements": {
+        "com.apple.developer.game-center": true
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -38,6 +43,9 @@
         "projectId": "8a4896a9-9612-4fe7-a544-8bb12ac5ed87"
       }
     },
+    "plugins": [
+      "expo-game-center/plugin/build"
+    ],
     "owner": "hags1153"
   }
 }

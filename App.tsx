@@ -3,7 +3,8 @@ import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { palette as C, CIRCUIT, GameKey } from "./src/theme";
 import { dayIndex, seedFor } from "./src/daily";
-import { DayState, Stats, GameResult, loadDay, saveDay, loadStats, commitCircuit, circuitComplete } from "./src/storage";
+import { DayState, Stats, GameResult, loadDay, saveDay, loadStats, commitCircuit, circuitComplete, dayTotal } from "./src/storage";
+import { ACHIEVEMENT_IDS, LeaderboardPeriod, reportAchievements, submitDailyLeaderboardScore, showAchievements, showGameCenterDashboard, showLeaderboard } from "./src/gameCenter";
 import Hub from "./src/Hub";
 import SignIn from "./src/SignIn";
 import Wordle from "./src/games/Wordle";
@@ -12,15 +13,24 @@ import Ladder from "./src/games/Ladder";
 import Missing from "./src/games/Missing";
 import Blitz from "./src/games/Blitz";
 import { GameProps } from "./src/games/types";
+import { UpdateRequired, useVersionGate } from "./src/VersionGate";
 
 const GAMES: Record<GameKey, React.ComponentType<GameProps>> = {
   wordle: Wordle, scramble: Scramble, ladder: Ladder, missing: Missing, blitz: Blitz,
+};
+const WIN_ACHIEVEMENTS: Record<GameKey, string> = {
+  wordle: ACHIEVEMENT_IDS.wordleWin,
+  scramble: ACHIEVEMENT_IDS.scrambleWin,
+  ladder: ACHIEVEMENT_IDS.ladderWin,
+  missing: ACHIEVEMENT_IDS.missingWin,
+  blitz: ACHIEVEMENT_IDS.blitzWin,
 };
 
 type Screen = { name: "hub" } | { name: "game"; key: GameKey } | { name: "signin" };
 
 export default function App() {
   const day = dayIndex();
+  const versionGate = useVersionGate();
   const [screen, setScreen] = useState<Screen>({ name: "hub" });
   const [dayState, setDayState] = useState<DayState>({ day, results: {} });
   const [stats, setStats] = useState<Stats | null>(null);
@@ -33,7 +43,17 @@ export default function App() {
     const merged = !prev || result.score > (prev.score || 0) ? result : prev;
     const next: DayState = { ...dayState, results: { ...dayState.results, [key]: merged } };
     setDayState(next); await saveDay(next);
-    if (circuitComplete(next)) setStats(await commitCircuit(day, next));
+    if (result.won) reportAchievements([WIN_ACHIEVEMENTS[key]]);
+    if (circuitComplete(next)) {
+      setStats(await commitCircuit(day, next));
+      const total = dayTotal(next);
+      submitDailyLeaderboardScore(total);
+      reportAchievements([
+        ACHIEVEMENT_IDS.circuitComplete,
+        ...(total >= 5000 ? [ACHIEVEMENT_IDS.fiveThousand] : []),
+        ...(total >= 6000 ? [ACHIEVEMENT_IDS.sixThousand] : []),
+      ]);
+    }
     setScreen({ name: "hub" });
   }, [dayState, day]);
 
@@ -47,7 +67,11 @@ export default function App() {
     setScreen({ name: "game", key });
   }, [dayState]);
 
+  if (versionGate.required) return (<><StatusBar style="light" /><UpdateRequired manifest={versionGate.manifest} /></>);
+
   if (!stats) return <View style={{ flex: 1, backgroundColor: C.bg1 }}><StatusBar style="light" /></View>;
+
+  const openLeaderboard = (period: LeaderboardPeriod) => { showLeaderboard(period); };
 
   if (screen.name === "game") {
     const Game = GAMES[screen.key];
@@ -62,14 +86,17 @@ export default function App() {
       </>
     );
   }
-  if (screen.name === "signin") return (<><StatusBar style="light" /><SignIn onClose={() => setScreen({ name: "hub" })} /></>);
+  if (screen.name === "signin") return (<><StatusBar style="light" /><SignIn onClose={() => setScreen({ name: "hub" })} onLeaderboard={openLeaderboard} onAchievements={showAchievements} onDashboard={showGameCenterDashboard} /></>);
 
   return (
     <>
       <StatusBar style="light" />
       <Hub day={day} dayState={dayState} stats={stats}
         onPlay={openGame}
-        onSignIn={() => setScreen({ name: "signin" })} />
+        onSignIn={() => setScreen({ name: "signin" })}
+        onLeaderboard={openLeaderboard}
+        onAchievements={showAchievements}
+        onDashboard={showGameCenterDashboard} />
     </>
   );
 }

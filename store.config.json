@@ -2,7 +2,7 @@
   "configVersion": 0,
   "apple": {
     "copyright": "2026 Ryan Hagerty",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "release": {
       "automaticRelease": true
     },
@@ -13,10 +13,22 @@
         "privacyPolicyUrl": "https://hags1153.github.io/dalee/privacy.html",
         "supportUrl": "https://hags1153.github.io/dalee/support.html",
         "marketingUrl": "https://hags1153.github.io/dalee/",
-        "description": "Dalee is the daily word circuit — five bite-size word games, one fresh set every day. Everyone plays the same puzzles, so it's you against the day (and your friends).\n\nPlay the full circuit in about 25 minutes:\n\n• Wordle — guess the five-letter word in six tries\n• Scramble — unscramble the jumbled letters\n• Ladder — change one letter at a time to reach the target\n• Missing — fill in the blanks from a clue\n• Blitz — find as many words as you can in 60 seconds\n\nRack up a daily score, build your streak, and come back tomorrow for a brand-new circuit. Beautifully designed, quick to play, and endlessly replayable.\n\n— Five word games in one daily circuit\n— A fresh set of puzzles every day\n— Daily scores and streaks to keep you coming back\n— Gorgeous, distraction-free design\n— Free to play",
-        "keywords": ["word", "puzzle", "daily", "games", "scramble", "anagram", "ladder", "blitz", "streak", "brain", "vocabulary"],
-        "promoText": "Five word games, one a day. Wordle, Scramble, Ladder, Missing and Blitz — play the daily circuit in about 25 minutes and keep your streak alive.",
-        "releaseNotes": "Finished today's circuit? Replay any game just for fun — it won't touch your score or streak. Hints now show exactly how many points they cost (and deduct them live), and every game has a clear, full running timer so you can race the clock."
+        "description": "Dalee is the daily word circuit \u2014 five bite-size word games, one fresh set every day. Everyone plays the same puzzles, so it's you against the day, your friends, and the Game Center leaderboards.\n\nPlay the full circuit in about 25 minutes:\n\n\u2022 Wordle \u2014 guess the five-letter word in six tries\n\u2022 Scramble \u2014 unscramble the jumbled letters\n\u2022 Ladder \u2014 change one letter at a time to reach the target\n\u2022 Missing \u2014 fill in the blanks from a clue\n\u2022 Blitz \u2014 find as many words as you can in 60 seconds\n\nRack up your daily score, build your streak, unlock achievements, share your result, and compare your run on daily, weekly, and yearly Game Center leaderboards. Beautifully designed, quick to play, and endlessly replayable.\n\n\u2014 Five word games in one daily circuit\n\u2014 A fresh set of puzzles every day\n\u2014 Daily, weekly, and yearly Game Center leaderboards\n\u2014 Achievements, challenges, sharing, and streaks\n\u2014 Gorgeous, distraction-free design\n\u2014 Free to play",
+        "keywords": [
+          "word",
+          "puzzle",
+          "daily",
+          "games",
+          "scramble",
+          "anagram",
+          "ladder",
+          "blitz",
+          "streak",
+          "brain",
+          "vocabulary"
+        ],
+        "promoText": "Game Center is here: daily, weekly, and yearly leaderboards, achievements, challenges, sharing, and the same five-game Dalee circuit every day.",
+        "releaseNotes": "Adds Game Center daily, weekly, and yearly leaderboards, achievements, native Game Center dashboard access, and score sharing while keeping the improved submit flow from the latest Dalee builds."
       }
     },
     "advisory": {
@@ -37,7 +49,9 @@
       "unrestrictedWebAccess": false,
       "violenceCartoonOrFantasy": "NONE",
       "violenceRealistic": "NONE",
-      "violenceRealisticProlongedGraphicOrSadistic": "NONE"
+      "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+      "socialMedia": false,
+      "socialMediaAgeRestricted": false
     }
   }
 }

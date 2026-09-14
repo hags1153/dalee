@@ -2,16 +2,16 @@ import React, { useMemo, useState, useRef } from "react";
 import { View, Text, StyleSheet, Pressable, Animated } from "react-native";
 import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, TimerBadge, PointsPill, FunBanner, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
-import { pick, shuffle } from "../daily";
+import { shuffle } from "../daily";
 import { scrambleScore, timeBonus, applyRestarts, SCRAMBLE_HINT, SCRAMBLE_WRONG } from "../scoring";
-import { SCRAMBLE_WORDS } from "../wordbank";
+import { scrambleAnswer } from "../puzzles";
 import { GameProps } from "./types";
 
 const G = games.scramble;
 
 export default function Scramble({ seed, onDone, onClose, restarts = 0, forFun = false }: GameProps) {
   const finish = (r: Parameters<typeof onDone>[0]) => (forFun ? onClose() : onDone(r));
-  const answer = useMemo(() => pick(SCRAMBLE_WORDS, seed), [seed]);
+  const answer = useMemo(() => scrambleAnswer(seed), [seed]);
   const pool = useMemo(() => {
     let s = shuffle(answer.split(""), seed);
     if (s.join("") === answer) s = shuffle(answer.split(""), seed + 7);

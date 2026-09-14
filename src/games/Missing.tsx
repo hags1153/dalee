@@ -2,16 +2,16 @@ import React, { useMemo, useState, useRef } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import { ScreenBG, Header, Keyboard, GradientButton, GhostButton, GameIntro, TimerBadge, PointsPill, FunBanner, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
-import { pick, seededRng } from "../daily";
+import { seededRng } from "../daily";
 import { missingScore, timeBonus, applyRestarts, MISSING_HINT, MISSING_WRONG } from "../scoring";
-import { MISSING } from "../wordbank";
+import { missingPuzzle } from "../puzzles";
 import { GameProps } from "./types";
 
 const G = games.missing;
 
 export default function Missing({ seed, onDone, onClose, restarts = 0, forFun = false }: GameProps) {
   const finish = (r: Parameters<typeof onDone>[0]) => (forFun ? onClose() : onDone(r));
-  const puzzle = useMemo(() => pick(MISSING, seed), [seed]);
+  const puzzle = useMemo(() => missingPuzzle(seed), [seed]);
   const word = puzzle.word;
   // deterministically choose which positions are blank (~45%, at least 2)
   const blanks = useMemo(() => {

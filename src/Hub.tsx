@@ -1,20 +1,26 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Pressable, ScrollView, Share } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { ScreenBG, GradientButton, haptic } from "./ui";
+import { ScreenBG, GradientButton, GhostButton, haptic } from "./ui";
 import { palette as C, games, gradients, radius, font, shadow, CIRCUIT, GameKey } from "./theme";
 import { DayState, Stats, circuitProgress, circuitComplete, dayTotal } from "./storage";
 import { fmt } from "./scoring";
 import { prettyDate } from "./daily";
+import { LeaderboardPeriod } from "./gameCenter";
 
-export default function Hub({ day, dayState, stats, onPlay, onSignIn }: {
+export default function Hub({ day, dayState, stats, onPlay, onSignIn, onLeaderboard, onAchievements, onDashboard }: {
   day: number; dayState: DayState; stats: Stats;
-  onPlay: (k: GameKey) => void; onSignIn: () => void;
+  onPlay: (k: GameKey) => void; onSignIn: () => void; onLeaderboard: (period: LeaderboardPeriod) => void; onAchievements: () => void; onDashboard: () => void;
 }) {
   const progress = circuitProgress(dayState);
   const done = circuitComplete(dayState);
   const total = dayTotal(dayState);
   const next = CIRCUIT.find((k) => !dayState.results[k]?.done);
+  const shareScore = () => {
+    haptic.tap();
+    const status = done ? `I scored ${fmt(total)} in today's Dalee circuit.` : `I'm ${progress}/5 through today's Dalee circuit with ${fmt(total)} points.`;
+    Share.share({ message: `${status} Play Dalee: https://hags1153.github.io/dalee/` }).catch(() => {});
+  };
 
   return (
     <ScreenBG>
@@ -47,6 +53,16 @@ export default function Hub({ day, dayState, stats, onPlay, onSignIn }: {
           <Stat label="BEST DAY" value={fmt(stats.bestDay)} />
           <View style={styles.divider} />
           <Stat label="TOTAL" value={fmt(stats.totalScore)} />
+        </View>
+        <View style={styles.leaderboards}>
+          <GhostButton label="Daily" onPress={() => onLeaderboard("daily")} style={styles.leaderboardBtn} />
+          <GhostButton label="Weekly" onPress={() => onLeaderboard("weekly")} style={styles.leaderboardBtn} />
+          <GhostButton label="Yearly" onPress={() => onLeaderboard("yearly")} style={styles.leaderboardBtn} />
+        </View>
+        <View style={styles.gameCenterRow}>
+          <GhostButton label="Share" onPress={shareScore} style={styles.gameCenterBtn} />
+          <GhostButton label="Achievements" onPress={onAchievements} style={styles.gameCenterBtn} />
+          <GhostButton label="Game Center" onPress={onDashboard} style={styles.gameCenterBtn} />
         </View>
 
         {/* circuit header */}
@@ -115,6 +131,10 @@ const styles = StyleSheet.create({
   scoreSub: { color: "rgba(255,255,255,0.9)", fontSize: 13, fontWeight: "700", marginTop: 12 },
 
   stats: { flexDirection: "row", backgroundColor: C.surface, borderRadius: radius.lg, paddingVertical: 16, marginTop: 16, borderWidth: 1, borderColor: C.hairline },
+  leaderboards: { flexDirection: "row", gap: 8, marginTop: 12 },
+  leaderboardBtn: { flex: 1, paddingHorizontal: 8 },
+  gameCenterRow: { flexDirection: "row", gap: 8, marginTop: 8 },
+  gameCenterBtn: { flex: 1, paddingHorizontal: 6 },
   divider: { width: 1, backgroundColor: C.hairline },
   statV: { color: C.text, fontSize: 20, fontWeight: "800" },
   statL: { color: C.textFaint, fontSize: 11, fontWeight: "700", letterSpacing: 1, marginTop: 3 },
