@@ -3,8 +3,13 @@ import { CIRCUIT, GameKey } from "./theme";
 import { COMPLETION_BONUS } from "./scoring";
 
 export type GameResult = { done: boolean; won: boolean; score: number; guesses?: number };
-// `opens` counts how many times each game has been started today; opens-1 = restarts.
-export type DayState = { day: number; results: Partial<Record<GameKey, GameResult>>; opens?: Partial<Record<GameKey, number>> };
+// `opens` counts scored-game starts; opens-1 = restarts. `funOpens` rotates completed games into fresh non-scoring variants.
+export type DayState = {
+  day: number;
+  results: Partial<Record<GameKey, GameResult>>;
+  opens?: Partial<Record<GameKey, number>>;
+  funOpens?: Partial<Record<GameKey, number>>;
+};
 export type Stats = {
   streak: number; maxStreak: number; circuitsCompleted: number;
   lastCircuitDay: number; totalScore: number; gamesPlayed: number; bestDay: number;

@@ -76,7 +76,11 @@ export default function App() {
 
   // Opening a not-yet-finished game counts as a start; the 2nd+ start is a restart.
   const openGame = useCallback(async (key: GameKey) => {
-    if (!dayState.results[key]?.done) {
+    if (dayState.results[key]?.done) {
+      const funOpens = { ...dayState.funOpens, [key]: (dayState.funOpens?.[key] ?? 0) + 1 };
+      const next: DayState = { ...dayState, funOpens };
+      setDayState(next); await saveDay(next);
+    } else {
       const opens = { ...dayState.opens, [key]: (dayState.opens?.[key] ?? 0) + 1 };
       const next: DayState = { ...dayState, opens };
       setDayState(next); await saveDay(next);
@@ -97,10 +101,12 @@ export default function App() {
     const nextGameName = nextKey ? games[nextKey].name : "Hub";
     const restarts = Math.max(0, (dayState.opens?.[screen.key] ?? 1) - 1);
     const forFun = !!dayState.results[screen.key]?.done;
+    const funRun = dayState.funOpens?.[screen.key] ?? 0;
+    const gameSeed = forFun ? seedFor(idx + 1 + 37 * Math.max(1, funRun), new Date(Date.now() + Math.max(1, funRun) * 86_400_000)) : seedFor(idx + 1);
     return (
       <>
         <StatusBar style="light" />
-        <Game seed={seedFor(idx + 1)} existing={dayState.results[screen.key]} restarts={restarts} forFun={forFun} nextGameName={nextGameName}
+        <Game seed={gameSeed} existing={dayState.results[screen.key]} restarts={restarts} forFun={forFun} nextGameName={nextGameName}
           liveScoreVisible={settings.liveScoreVisible} onToggleLiveScore={toggleLiveScore}
           onGoNext={() => nextKey ? openGame(nextKey) : setScreen({ name: "hub" })}
           onDone={(r, action) => onDone(screen.key, r, action)} onClose={() => setScreen({ name: "hub" })} />

@@ -185,6 +185,9 @@ Store screenshots live in `docs/screenshots/` and `screenshots/`.
 - **1.0.6 OTA 2026.09.14.4** — result panels now show per-game score breakdowns, add separate
   Continue/Home actions, and Continue advances to the next game instead of returning to the Hub.
   Adds a persistent live-score visibility toggle.
+- **1.0.6 OTA 2026.09.14.5** — play-for-fun opens fresh non-scoring puzzle variants instead of
+  replaying the completed daily scored puzzle. Uses `DayState.funOpens` so fun runs do not affect
+  restart penalties.
 
 ## Roadmap / fast-follow
 
