@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
-import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, FunBanner, ResultPanel, haptic } from "../ui";
+import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, FunBanner, PointsPill, ResultPanel, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { shuffle } from "../daily";
 import { blitzWordPts as pts, applyRestarts } from "../scoring";
@@ -21,6 +21,7 @@ export default function Blitz({ seed, onDone, onClose, restarts = 0, forFun = fa
   const [state, setState] = useState<"ready" | "play" | "done">("ready");
   const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; payload: Parameters<typeof onDone>[0] } | null>(null);
   const finished = useRef(false);
+  const liveScore = result?.score ?? applyRestarts(score, restarts);
 
   useEffect(() => {
     if (state !== "play") return;
@@ -62,7 +63,7 @@ export default function Blitz({ seed, onDone, onClose, restarts = 0, forFun = fa
   return (
     <ScreenBG>
       <View style={styles.wrap}>
-        <Header title="Blitz" subtitle="Most words in 60s" onClose={onClose} right={<Text style={styles.score}>{score}</Text>} />
+        <Header title="Blitz" subtitle="Most words in 60s" onClose={onClose} right={<PointsPill points={liveScore} />} />
         <GameIntro text={games.blitz.desc} />
         {forFun && <FunBanner />}
         {state === "ready" && (
@@ -102,7 +103,6 @@ export default function Blitz({ seed, onDone, onClose, restarts = 0, forFun = fa
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 50 },
-  score: { color: G.hue, fontSize: 20, fontWeight: "800" },
   ready: { backgroundColor: C.surface, borderColor: G.hue + "66", borderWidth: 1, borderRadius: radius.md, padding: 16, gap: 10, marginTop: 14 },
   readyT: { color: C.text, fontSize: 22, fontWeight: "900", textAlign: "center" },
   readySub: { color: C.textDim, fontSize: 14, fontWeight: "600", lineHeight: 20, textAlign: "center" },

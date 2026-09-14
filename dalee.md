@@ -179,6 +179,9 @@ Store screenshots live in `docs/screenshots/` and `screenshots/`.
   selection across crossword answers, adds post-game result panels, improves Blitz ready/end flow,
   softens absent Wordle keyboard letters with translucent red, improves Hub card states, and moves
   the daily rollover to 4:00 AM America/New_York.
+- **1.0.6 OTA 2026.09.14.3** — adds a live score pill to every game. Wordle, Scramble, Ladder,
+  and Mini Crossword show current points-on-the-line including time decay, penalties, hints, and
+  restarts; Blitz shows live net points. The score pill flashes soft red whenever points decrease.
 
 ## Roadmap / fast-follow
 

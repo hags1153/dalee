@@ -26,6 +26,7 @@ export default function Scramble({ seed, onDone, onClose, restarts = 0, forFun =
   const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; payload: Parameters<typeof onDone>[0] } | null>(null);
   const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
+  const liveScore = result?.score ?? applyRestarts(scrambleScore(wrong, hints) + timeBonus(secs), restarts);
 
   const usedSet = new Set(placed);
   const built = placed.map((i) => pool[i]).join("");
@@ -55,7 +56,7 @@ export default function Scramble({ seed, onDone, onClose, restarts = 0, forFun =
   return (
     <ScreenBG>
       <View style={styles.wrap}>
-        <Header title="Scramble" subtitle="Unscramble the word" onClose={onClose} right={<><PointsPill points={scrambleScore(wrong, hints)} /><TimerBadge seconds={secs} /></>} />
+        <Header title="Scramble" subtitle="Unscramble the word" onClose={onClose} right={<><PointsPill points={liveScore} /><TimerBadge seconds={secs} /></>} />
         <GameIntro text={games.scramble.desc} />
         {forFun && <FunBanner />}
         {!!toast && <View style={[styles.toast, win && styles.toastWin]}><Text style={styles.toastT}>{toast}</Text></View>}

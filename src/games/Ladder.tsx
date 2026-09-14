@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef } from "react";
 import { View, Text, StyleSheet, Animated, ScrollView } from "react-native";
-import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
+import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, PointsPill, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { ladderScore, timeBonus, applyRestarts } from "../scoring";
 import { DICT4 } from "../wordbank";
@@ -23,6 +23,7 @@ export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = f
   const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; payload: Parameters<typeof onDone>[0] } | null>(null);
   const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
+  const liveScore = result?.score ?? applyRestarts(ladderScore(chain.length) + timeBonus(secs), restarts);
   const flash = (m: string, w = false) => { setWin(w); setToast(m); setTimeout(() => setToast(""), 1300); };
   const doShake = () => { haptic.error(); Animated.sequence([-8, 8, -6, 6, 0].map((v) => Animated.timing(shake, { toValue: v, duration: 45, useNativeDriver: true }))).start(); };
 
@@ -66,7 +67,7 @@ export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = f
   return (
     <ScreenBG>
       <View style={styles.wrap}>
-        <Header title="Ladder" subtitle="Change one letter at a time" onClose={onClose} right={<TimerBadge seconds={secs} />} />
+        <Header title="Ladder" subtitle="Change one letter at a time" onClose={onClose} right={<><PointsPill points={liveScore} /><TimerBadge seconds={secs} /></>} />
         <GameIntro text={games.ladder.desc} />
         {forFun && <FunBanner />}
         <View style={styles.goal}><Text style={styles.goalT}>{start}</Text><Text style={styles.arrow}>→</Text><Text style={[styles.goalT, { color: C.correct }]}>{end}</Text></View>

@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef, useCallback } from "react";
 import { View, Text, StyleSheet, Animated, Dimensions } from "react-native";
-import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
+import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, PointsPill, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { wordleScore, timeBonus, applyRestarts } from "../scoring";
 import { DICT5 } from "../wordbank";
@@ -35,6 +35,7 @@ export default function Wordle({ seed, onDone, onClose, restarts = 0, forFun = f
   const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; payload: Parameters<typeof onDone>[0] } | null>(null);
   const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
+  const liveScore = result?.score ?? (state === "lost" ? 0 : applyRestarts(wordleScore(Math.min(guesses.length + 1, MAX), true) + timeBonus(secs), restarts));
 
   const keyStatuses = useMemo(() => {
     const m: Record<string, St> = {}; const rank = { correct: 3, present: 2, absent: 1 };
@@ -83,7 +84,7 @@ export default function Wordle({ seed, onDone, onClose, restarts = 0, forFun = f
   return (
     <ScreenBG>
       <View style={styles.wrap}>
-        <Header title="Wordle" subtitle="Guess the 5-letter word" onClose={onClose} right={<TimerBadge seconds={secs} />} />
+        <Header title="Wordle" subtitle="Guess the 5-letter word" onClose={onClose} right={<><PointsPill points={liveScore} /><TimerBadge seconds={secs} /></>} />
         <GameIntro text={games.wordle.desc} />
         {forFun && <FunBanner />}
         {!!toast && <View style={[styles.toast, win && styles.toastWin]}><Text style={[styles.toastT, win && styles.toastTWin]}>{toast}</Text></View>}

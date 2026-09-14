@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View, Text, Pressable, StyleSheet, Animated, ViewStyle, TextStyle, Platform,
 } from "react-native";
@@ -71,7 +71,21 @@ export function TimerBadge({ seconds }: { seconds: number }) {
 
 // Live "points on the line" pill — visibly drops when a hint or wrong guess costs points.
 export function PointsPill({ points }: { points: number }) {
-  return <View style={styles.points}><Text style={styles.pointsT}>★ {points}</Text></View>;
+  const drop = useRef(new Animated.Value(0)).current;
+  const previous = useRef(points);
+  useEffect(() => {
+    if (points < previous.current) {
+      drop.setValue(1);
+      Animated.timing(drop, { toValue: 0, duration: 420, useNativeDriver: true }).start();
+    }
+    previous.current = points;
+  }, [drop, points]);
+  return (
+    <View style={styles.points}>
+      <Animated.View style={[styles.pointsDrop, { opacity: drop }]} />
+      <Text style={styles.pointsT}>★ {points}</Text>
+    </View>
+  );
 }
 
 // Shown when replaying a game that's already done today.
@@ -169,8 +183,9 @@ const styles = StyleSheet.create({
   rightSlotWide: { minWidth: 120 },
   timer: { backgroundColor: C.surfaceHi, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill },
   timerT: { color: C.text, fontSize: 14, fontWeight: "800", fontVariant: ["tabular-nums"] },
-  points: { backgroundColor: C.accent + "22", paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill },
-  pointsT: { color: C.accentSoft, fontSize: 14, fontWeight: "800" },
+  points: { backgroundColor: C.accent + "22", paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, overflow: "hidden" },
+  pointsDrop: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: "rgba(244,63,94,0.36)" },
+  pointsT: { color: C.accentSoft, fontSize: 14, fontWeight: "800", zIndex: 1 },
   intro: { color: C.textDim, fontSize: 13.5, lineHeight: 19, textAlign: "center", marginTop: 10, paddingHorizontal: 10 },
   funBanner: { backgroundColor: C.present + "1F", borderColor: C.present + "66", borderWidth: 1, borderRadius: radius.md, paddingVertical: 9, paddingHorizontal: 14, marginTop: 10 },
   funT: { color: C.present, fontSize: 12.5, fontWeight: "700", textAlign: "center", lineHeight: 17 },
