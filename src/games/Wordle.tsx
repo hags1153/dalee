@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef, useCallback } from "react";
 import { View, Text, StyleSheet, Animated, Dimensions } from "react-native";
-import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, FunBanner, useStopwatch, haptic } from "../ui";
+import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { wordleScore, timeBonus, applyRestarts } from "../scoring";
 import { DICT5 } from "../wordbank";
@@ -23,7 +23,7 @@ function evaluate(guess: string, answer: string): St[] {
 }
 const col = (s: St) => s === "correct" ? C.correct : s === "present" ? C.present : C.absent;
 
-export default function Wordle({ seed, onDone, onClose, restarts = 0, forFun = false }: GameProps) {
+export default function Wordle({ seed, onDone, onClose, restarts = 0, forFun = false, nextGameName }: GameProps) {
   const finish = (r: Parameters<typeof onDone>[0]) => (forFun ? onClose() : onDone(r));
   const answer = useMemo(() => wordleAnswer(seed), [seed]);
   const [guesses, setGuesses] = useState<string[]>([]);
@@ -32,6 +32,7 @@ export default function Wordle({ seed, onDone, onClose, restarts = 0, forFun = f
   const [state, setState] = useState<"play" | "won" | "lost">("play");
   const [toast, setToast] = useState("");
   const [win, setWin] = useState(false);
+  const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; payload: Parameters<typeof onDone>[0] } | null>(null);
   const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
 
@@ -53,9 +54,19 @@ export default function Wordle({ seed, onDone, onClose, restarts = 0, forFun = f
     setGuesses(ng); setEvals(ne); setCur("");
     const won = ev.every((s) => s === "correct");
     const lost = !won && ng.length >= MAX;
-    if (won) { haptic.success(); const score = applyRestarts(wordleScore(ng.length, true) + timeBonus(secs), restarts); setState("won"); flash(forFun ? `Solved in ${secs}s! 🎉` : `Solved in ${secs}s!  +${score}`, true); setTimeout(() => finish({ done: true, won: true, score, guesses: ng.length }), 1200); }
-    else if (lost) { haptic.error(); setState("lost"); flash(answer); setTimeout(() => finish({ done: true, won: false, score: 0, guesses: MAX }), 1400); }
-  }, [state, cur, answer, guesses, evals, onDone, onClose, secs, restarts, forFun]);
+    if (won) {
+      haptic.success();
+      const score = applyRestarts(wordleScore(ng.length, true) + timeBonus(secs), restarts);
+      setState("won");
+      flash(forFun ? `Solved in ${secs}s!` : `Solved in ${secs}s!  +${score}`, true);
+      setResult({ title: "Solved", detail: `${ng.length}/6 guesses in ${secs}s`, score, won: true, payload: { done: true, won: true, score, guesses: ng.length } });
+    } else if (lost) {
+      haptic.error();
+      setState("lost");
+      flash(answer);
+      setResult({ title: "Answer revealed", detail: `The word was ${answer}`, score: 0, won: false, payload: { done: true, won: false, score: 0, guesses: MAX } });
+    }
+  }, [state, cur, answer, guesses, evals, secs, restarts, forFun]);
 
   const onKey = (k: string) => {
     if (state !== "play") return;
@@ -100,6 +111,7 @@ export default function Wordle({ seed, onDone, onClose, restarts = 0, forFun = f
           <GradientButton label="SUBMIT" colors={G.grad as any} onPress={submit} disabled={cur.length !== LEN || state !== "play"} />
           <Keyboard onKey={onKey} statuses={keyStatuses} showEnter={false} />
         </View>
+        {result && <ResultPanel title={result.title} detail={result.detail} score={result.score} won={result.won} forFun={forFun} nextLabel={nextGameName ? `Continue to ${nextGameName}` : "Continue"} onContinue={() => finish(result.payload)} />}
       </View>
     </ScreenBG>
   );

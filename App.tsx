@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { palette as C, CIRCUIT, GameKey } from "./src/theme";
+import { palette as C, CIRCUIT, GameKey, games } from "./src/theme";
 import { dayIndex, seedFor } from "./src/daily";
 import { DayState, Stats, GameResult, loadDay, saveDay, loadStats, commitCircuit, circuitComplete, dayTotal } from "./src/storage";
 import { ACHIEVEMENT_IDS, LeaderboardPeriod, reportAchievements, submitDailyLeaderboardScore, showAchievements, showGameCenterDashboard, showLeaderboard } from "./src/gameCenter";
@@ -76,12 +76,13 @@ export default function App() {
   if (screen.name === "game") {
     const Game = GAMES[screen.key];
     const idx = CIRCUIT.indexOf(screen.key);
+    const nextGameName = CIRCUIT[idx + 1] ? games[CIRCUIT[idx + 1]].name : "Hub";
     const restarts = Math.max(0, (dayState.opens?.[screen.key] ?? 1) - 1);
     const forFun = !!dayState.results[screen.key]?.done;
     return (
       <>
         <StatusBar style="light" />
-        <Game seed={seedFor(idx + 1)} existing={dayState.results[screen.key]} restarts={restarts} forFun={forFun}
+        <Game seed={seedFor(idx + 1)} existing={dayState.results[screen.key]} restarts={restarts} forFun={forFun} nextGameName={nextGameName}
           onDone={(r) => onDone(screen.key, r)} onClose={() => setScreen({ name: "hub" })} />
       </>
     );

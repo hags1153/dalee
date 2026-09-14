@@ -75,19 +75,22 @@ export default function Hub({ day, dayState, stats, onPlay, onSignIn, onLeaderbo
         <View style={{ gap: 12 }}>
           {CIRCUIT.map((k, i) => {
             const g = games[k]; const r = dayState.results[k];
+            const isNext = next === k;
             return (
               <Pressable key={k} onPress={() => { haptic.tap("medium"); onPlay(k); }}>
-                <View style={[styles.card, shadow.card, r?.done && { borderColor: g.hue + "66" }]}>
+                <View style={[styles.card, shadow.card, r?.done && { borderColor: g.hue + "66" }, isNext && styles.nextCard]}>
                   <LinearGradient colors={g.grad as any} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.badge}>
                     <Text style={styles.badgeT}>{g.icon}</Text>
                   </LinearGradient>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.cardTitle}>{i + 1}. {g.name}</Text>
-                    <Text style={styles.cardTag}>{g.tag}</Text>
+                    <Text style={styles.cardTag}>{r?.done ? "Replay for fun" : isNext ? "Up next" : g.tag}</Text>
                   </View>
-                  {r?.done
-                    ? <View style={[styles.scorePill, { backgroundColor: g.hue + "22" }]}><Text style={[styles.scorePillT, { color: g.hue }]}>{r.won ? `+${fmt(r.score)}` : "—"}</Text></View>
-                    : <Text style={styles.chev}>›</Text>}
+                  <View style={styles.cardMeta}>
+                    {r?.done
+                      ? <View style={[styles.scorePill, { backgroundColor: g.hue + "22" }]}><Text style={[styles.scorePillT, { color: g.hue }]}>{r.won ? `+${fmt(r.score)}` : "Done"}</Text></View>
+                      : isNext ? <View style={styles.nextPill}><Text style={styles.nextPillT}>Next</Text></View> : <Text style={styles.chev}>›</Text>}
+                  </View>
                 </View>
               </Pressable>
             );
@@ -101,7 +104,7 @@ export default function Hub({ day, dayState, stats, onPlay, onSignIn, onLeaderbo
                 <Text style={styles.doneT}>Circuit complete!</Text>
                 <Text style={styles.doneSub}>You scored {fmt(total)} today · {stats.streak}🔥 day streak</Text>
                 <Text style={styles.doneFun}>Already completed today — tap any game to play for fun. It won't change your score.</Text>
-                <GradientButton label="Play for fun 🎈" colors={gradients.brand as any} onPress={() => onPlay(CIRCUIT[0])} style={{ marginTop: 14, alignSelf: "stretch" }} />
+                <GradientButton label="Replay Wordle" colors={gradients.brand as any} onPress={() => onPlay(CIRCUIT[0])} style={{ marginTop: 14, alignSelf: "stretch" }} />
               </View>
             : <GradientButton label={progress === 0 ? "Start today's circuit" : `Continue → ${games[next!].name}`} colors={gradients.brand as any} onPress={() => next && onPlay(next)} />}
         </View>
@@ -143,12 +146,16 @@ const styles = StyleSheet.create({
   h2: { color: C.text, ...font.h1 },
   est: { color: C.textFaint, ...font.label },
   card: { flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: radius.lg, padding: 14, gap: 14, borderWidth: 1, borderColor: C.hairline },
+  nextCard: { borderColor: C.accentSoft, backgroundColor: C.surfaceHi },
   badge: { width: 52, height: 52, borderRadius: radius.md, alignItems: "center", justifyContent: "center" },
   badgeT: { fontSize: 26 },
   cardTitle: { color: C.text, ...font.h2 },
   cardTag: { color: C.textFaint, ...font.label, marginTop: 2 },
   scorePill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill },
   scorePillT: { fontWeight: "800" },
+  nextPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill, backgroundColor: C.accent + "2E" },
+  nextPillT: { color: C.accentSoft, fontWeight: "900" },
+  cardMeta: { minWidth: 58, alignItems: "flex-end" },
   chev: { color: C.textFaint, fontSize: 28, fontWeight: "300", paddingRight: 4 },
   doneCard: { backgroundColor: C.surface, borderRadius: radius.lg, padding: 20, alignItems: "center", borderWidth: 1, borderColor: C.correct + "55" },
   doneT: { color: C.correct, fontSize: 20, fontWeight: "800" },

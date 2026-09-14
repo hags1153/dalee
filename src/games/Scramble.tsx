@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef } from "react";
 import { View, Text, StyleSheet, Pressable, Animated } from "react-native";
-import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, TimerBadge, PointsPill, FunBanner, useStopwatch, haptic } from "../ui";
+import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, TimerBadge, PointsPill, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { shuffle } from "../daily";
 import { scrambleScore, timeBonus, applyRestarts, SCRAMBLE_HINT, SCRAMBLE_WRONG } from "../scoring";
@@ -9,7 +9,7 @@ import { GameProps } from "./types";
 
 const G = games.scramble;
 
-export default function Scramble({ seed, onDone, onClose, restarts = 0, forFun = false }: GameProps) {
+export default function Scramble({ seed, onDone, onClose, restarts = 0, forFun = false, nextGameName }: GameProps) {
   const finish = (r: Parameters<typeof onDone>[0]) => (forFun ? onClose() : onDone(r));
   const answer = useMemo(() => scrambleAnswer(seed), [seed]);
   const pool = useMemo(() => {
@@ -23,6 +23,7 @@ export default function Scramble({ seed, onDone, onClose, restarts = 0, forFun =
   const [state, setState] = useState<"play" | "won">("play");
   const [toast, setToast] = useState("");
   const [win, setWin] = useState(false);
+  const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; payload: Parameters<typeof onDone>[0] } | null>(null);
   const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
 
@@ -46,8 +47,8 @@ export default function Scramble({ seed, onDone, onClose, restarts = 0, forFun =
     if (built === answer) {
       haptic.success(); setState("won");
       const score = applyRestarts(scrambleScore(wrong, hints) + timeBonus(secs), restarts);
-      flash(forFun ? `Nice, ${secs}s! 🎉` : `Nice, ${secs}s!  +${score}`, true);
-      setTimeout(() => finish({ done: true, won: true, score }), 1050);
+      flash(forFun ? `Nice, ${secs}s!` : `Nice, ${secs}s!  +${score}`, true);
+      setResult({ title: "Unscrambled", detail: `${answer} in ${secs}s`, score, won: true, payload: { done: true, won: true, score } });
     } else { setWrong((w) => w + 1); doShake(); flash(`−${SCRAMBLE_WRONG} · wrong`); }
   };
 
@@ -79,11 +80,12 @@ export default function Scramble({ seed, onDone, onClose, restarts = 0, forFun =
 
         <View style={{ marginTop: "auto", gap: 12, paddingBottom: 16 }}>
           <View style={{ flexDirection: "row", gap: 12 }}>
-            <GhostButton label="⌫ Delete" onPress={back} style={{ flex: 1 }} />
-            <GhostButton label={`💡 Hint −${SCRAMBLE_HINT}`} onPress={hint} style={{ flex: 1 }} />
+            <GhostButton label="Delete" onPress={back} style={{ flex: 1 }} />
+            <GhostButton label={`Hint -${SCRAMBLE_HINT}`} onPress={hint} style={{ flex: 1 }} />
           </View>
           <GradientButton label="Submit" colors={G.grad as any} onPress={submit} disabled={built.length !== answer.length} />
         </View>
+        {result && <ResultPanel title={result.title} detail={result.detail} score={result.score} won={result.won} forFun={forFun} nextLabel={nextGameName ? `Continue to ${nextGameName}` : "Continue"} onContinue={() => finish(result.payload)} />}
       </View>
     </ScreenBG>
   );

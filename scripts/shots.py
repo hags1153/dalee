@@ -58,7 +58,7 @@ def hub(W,H):
     b=d.textbbox((0,0),"5/5 complete",font=f(int(13*s),False)); ltext(d,W-m-(b[2]-b[0]),cy+int(14*s),"5/5 complete",f(int(13*s),False),CORRECT)
     # cards
     games=[("1. Wordle","Guess the word","wordle","+90",True),("2. Scramble","Unscramble it","scramble","+80",True),
-           ("3. Ladder","One letter at a time","ladder","+70",True),("4. Missing","Fill the blanks","missing","+85",True),
+           ("3. Ladder","One letter at a time","ladder","+70",True),("4. Mini Crossword","Solve the clues","missing","+85",True),
            ("5. Blitz","60-second word rush","blitz","+120",True)]
     gy=cy+int(52*s); ch=int(78*s); gap=int(12*s)
     for name,tag,key,score,done in games:

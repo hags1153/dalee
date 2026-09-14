@@ -12,7 +12,7 @@ export const BLITZ_DICT = new Set<string>(blitz as string[]);
 export const WORDLE_ANSWERS = ANSWERS.map((w) => w.toUpperCase());
 export const SCRAMBLE_WORDS = WORDLE_ANSWERS; // 5-letter common words, letters shuffled
 
-// Missing: reveal some letters, blank the rest, give a hint.
+// Legacy Missing word list, kept for compatibility with older selectors.
 export const MISSING: { word: string; hint: string }[] = [
   { word: "APPLE", hint: "A crisp orchard fruit" },
   { word: "OCEAN", hint: "A vast body of salt water" },
@@ -44,6 +44,203 @@ export const MISSING: { word: string; hint: string }[] = [
   { word: "OLIVE", hint: "A small fruit pressed for oil" },
   { word: "KNIFE", hint: "It cuts" },
   { word: "MEDAL", hint: "Awarded to winners" },
+];
+
+export type MiniCrosswordEntry = {
+  id: string;
+  clue: string;
+  answer: string;
+  row: number;
+  col: number;
+  dir: "across" | "down";
+};
+
+export type MiniCrossword = {
+  grid: string[];
+  entries: MiniCrosswordEntry[];
+};
+
+export const MINI_CROSSWORDS: MiniCrossword[] = [
+  {
+    grid: [
+      "CAT..",
+      "A....",
+      "RIVER",
+      "D....",
+      "STAR.",
+    ],
+    entries: [
+      { id: "1A", clue: "Small house pet", answer: "CAT", row: 0, col: 0, dir: "across" },
+      { id: "2A", clue: "Flowing water", answer: "RIVER", row: 2, col: 0, dir: "across" },
+      { id: "3A", clue: "Night-sky point", answer: "STAR", row: 4, col: 0, dir: "across" },
+      { id: "1D", clue: "Greeting card items", answer: "CARDS", row: 0, col: 0, dir: "down" },
+    ],
+  },
+  {
+    grid: [
+      "MOON.",
+      "A....",
+      "PILOT",
+      "L....",
+      "EAST.",
+    ],
+    entries: [
+      { id: "1A", clue: "It orbits Earth", answer: "MOON", row: 0, col: 0, dir: "across" },
+      { id: "2A", clue: "Flies a plane", answer: "PILOT", row: 2, col: 0, dir: "across" },
+      { id: "3A", clue: "Sunrise direction", answer: "EAST", row: 4, col: 0, dir: "across" },
+      { id: "1D", clue: "Tree with syrup", answer: "MAPLE", row: 0, col: 0, dir: "down" },
+    ],
+  },
+  {
+    grid: [
+      "BREAD",
+      "R....",
+      "USHER",
+      "S....",
+      "HONEY",
+    ],
+    entries: [
+      { id: "1A", clue: "Bakery loaf", answer: "BREAD", row: 0, col: 0, dir: "across" },
+      { id: "2A", clue: "Shows you to a seat", answer: "USHER", row: 2, col: 0, dir: "across" },
+      { id: "3A", clue: "Bees make it", answer: "HONEY", row: 4, col: 0, dir: "across" },
+      { id: "1D", clue: "Make-up brush", answer: "BRUSH", row: 0, col: 0, dir: "down" },
+    ],
+  },
+  {
+    grid: [
+      "LIGHT",
+      "E....",
+      "MONEY",
+      "O....",
+      "NORTH",
+    ],
+    entries: [
+      { id: "1A", clue: "Not heavy, or bright", answer: "LIGHT", row: 0, col: 0, dir: "across" },
+      { id: "2A", clue: "You spend it", answer: "MONEY", row: 2, col: 0, dir: "across" },
+      { id: "3A", clue: "Compass point", answer: "NORTH", row: 4, col: 0, dir: "across" },
+      { id: "1D", clue: "Sour yellow fruit", answer: "LEMON", row: 0, col: 0, dir: "down" },
+    ],
+  },
+  {
+    grid: [
+      "PIANO",
+      "L....",
+      "APPLE",
+      "N....",
+      "TIGER",
+    ],
+    entries: [
+      { id: "1A", clue: "Instrument with keys", answer: "PIANO", row: 0, col: 0, dir: "across" },
+      { id: "2A", clue: "Orchard fruit", answer: "APPLE", row: 2, col: 0, dir: "across" },
+      { id: "3A", clue: "Striped big cat", answer: "TIGER", row: 4, col: 0, dir: "across" },
+      { id: "1D", clue: "It grows from a seed", answer: "PLANT", row: 0, col: 0, dir: "down" },
+    ],
+  },
+  {
+    grid: [
+      "RIVER",
+      "O....",
+      "BEACH",
+      "O....",
+      "TORCH",
+    ],
+    entries: [
+      { id: "1A", clue: "Flowing water", answer: "RIVER", row: 0, col: 0, dir: "across" },
+      { id: "2A", clue: "Sand meets the sea", answer: "BEACH", row: 2, col: 0, dir: "across" },
+      { id: "3A", clue: "Handheld flame", answer: "TORCH", row: 4, col: 0, dir: "across" },
+      { id: "1D", clue: "Machine that acts on its own", answer: "ROBOT", row: 0, col: 0, dir: "down" },
+    ],
+  },
+  {
+    grid: [
+      "CHAIR",
+      "L....",
+      "OLIVE",
+      "U....",
+      "DANCE",
+    ],
+    entries: [
+      { id: "1A", clue: "You sit on it", answer: "CHAIR", row: 0, col: 0, dir: "across" },
+      { id: "2A", clue: "Small fruit pressed for oil", answer: "OLIVE", row: 2, col: 0, dir: "across" },
+      { id: "3A", clue: "Move to music", answer: "DANCE", row: 4, col: 0, dir: "across" },
+      { id: "1D", clue: "It floats in the sky", answer: "CLOUD", row: 0, col: 0, dir: "down" },
+    ],
+  },
+  {
+    grid: [
+      "HOUSE",
+      "O....",
+      "NURSE",
+      "E....",
+      "YACHT",
+    ],
+    entries: [
+      { id: "1A", clue: "Where people live", answer: "HOUSE", row: 0, col: 0, dir: "across" },
+      { id: "2A", clue: "Cares for the sick", answer: "NURSE", row: 2, col: 0, dir: "across" },
+      { id: "3A", clue: "Sailing boat", answer: "YACHT", row: 4, col: 0, dir: "across" },
+      { id: "1D", clue: "Bees make it", answer: "HONEY", row: 0, col: 0, dir: "down" },
+    ],
+  },
+  {
+    grid: [
+      "FIELD",
+      "L....",
+      "AMBER",
+      "M....",
+      "EAGLE",
+    ],
+    entries: [
+      { id: "1A", clue: "Open grassy land", answer: "FIELD", row: 0, col: 0, dir: "across" },
+      { id: "2A", clue: "Golden-orange color", answer: "AMBER", row: 2, col: 0, dir: "across" },
+      { id: "3A", clue: "Soaring bird of prey", answer: "EAGLE", row: 4, col: 0, dir: "across" },
+      { id: "1D", clue: "Bright part of a fire", answer: "FLAME", row: 0, col: 0, dir: "down" },
+    ],
+  },
+  {
+    grid: [
+      "BLOOM",
+      "R....",
+      "IVORY",
+      "C....",
+      "KNIFE",
+    ],
+    entries: [
+      { id: "1A", clue: "Flower opening", answer: "BLOOM", row: 0, col: 0, dir: "across" },
+      { id: "2A", clue: "Creamy white color", answer: "IVORY", row: 2, col: 0, dir: "across" },
+      { id: "3A", clue: "Kitchen cutter", answer: "KNIFE", row: 4, col: 0, dir: "across" },
+      { id: "1D", clue: "Builder stacks these", answer: "BRICK", row: 0, col: 0, dir: "down" },
+    ],
+  },
+  {
+    grid: [
+      "WHALE",
+      "O....",
+      "RADIO",
+      "L....",
+      "DREAM",
+    ],
+    entries: [
+      { id: "1A", clue: "Largest ocean mammal", answer: "WHALE", row: 0, col: 0, dir: "across" },
+      { id: "2A", clue: "Broadcast receiver", answer: "RADIO", row: 2, col: 0, dir: "across" },
+      { id: "3A", clue: "Sleep story", answer: "DREAM", row: 4, col: 0, dir: "across" },
+      { id: "1D", clue: "The whole planet", answer: "WORLD", row: 0, col: 0, dir: "down" },
+    ],
+  },
+  {
+    grid: [
+      "OCEAN",
+      "N....",
+      "ISSUE",
+      "O....",
+      "NOVEL",
+    ],
+    entries: [
+      { id: "1A", clue: "Vast salt water", answer: "OCEAN", row: 0, col: 0, dir: "across" },
+      { id: "2A", clue: "A problem or topic", answer: "ISSUE", row: 2, col: 0, dir: "across" },
+      { id: "3A", clue: "Long fiction book", answer: "NOVEL", row: 4, col: 0, dir: "across" },
+      { id: "1D", clue: "A small fruit with layers", answer: "ONION", row: 0, col: 0, dir: "down" },
+    ],
+  },
 ];
 
 // Ladder: change one letter at a time from start to end (each step a real 4-letter word).

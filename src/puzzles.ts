@@ -1,8 +1,9 @@
 import { seededRng } from "./daily";
-import { BLITZ_BASES, LADDERS, MISSING, SCRAMBLE_WORDS, WORDLE_ANSWERS } from "./wordbank";
+import { BLITZ_BASES, LADDERS, MINI_CROSSWORDS, MISSING, SCRAMBLE_WORDS, WORDLE_ANSWERS } from "./wordbank";
 
 type MissingPuzzle = (typeof MISSING)[number];
 type LadderPuzzle = (typeof LADDERS)[number];
+type MiniCrossword = (typeof MINI_CROSSWORDS)[number];
 
 const saltSeed = (seed: number, salt: number) => seed - (((seed % 100) + 100) % 100) + salt;
 
@@ -27,6 +28,16 @@ export function scrambleAnswer(seed: number): string {
 export function missingPuzzle(seed: number): MissingPuzzle {
   const used = new Set([wordleAnswer(seed), scrambleAnswer(seed)]);
   return pickUnique(MISSING, saltSeed(seed, 4), used, (puzzle) => puzzle.word);
+}
+
+export function miniCrossword(seed: number): MiniCrossword {
+  const used = new Set([wordleAnswer(seed), scrambleAnswer(seed)]);
+  const start = Math.floor(seededRng(saltSeed(seed, 4))() * MINI_CROSSWORDS.length);
+  for (let offset = 0; offset < MINI_CROSSWORDS.length; offset++) {
+    const puzzle = MINI_CROSSWORDS[(start + offset) % MINI_CROSSWORDS.length];
+    if (puzzle.entries.every((entry) => !used.has(entry.answer.toUpperCase()))) return puzzle;
+  }
+  return MINI_CROSSWORDS[start];
 }
 
 export function ladderPuzzle(seed: number): LadderPuzzle {

@@ -30,7 +30,7 @@ export const games = {
   wordle:   { key: "wordle",   name: "Wordle",   tag: "Guess the word",        desc: "Guess the hidden 5-letter word in six tries. Tile colors tell you which letters are right.", hue: "#22C55E", grad: ["#16A34A", "#22C55E"], icon: "🟩" },
   scramble: { key: "scramble", name: "Scramble", tag: "Unscramble it",         desc: "The letters of a word are jumbled — tap them in the right order to spell it out.", hue: "#8B5CF6", grad: ["#7C3AED", "#A855F7"], icon: "🔀" },
   ladder:   { key: "ladder",   name: "Ladder",   tag: "One letter at a time",  desc: "Turn the start word into the target, changing just one letter at a time — every step must be a real word.", hue: "#0EA5E9", grad: ["#0284C7", "#38BDF8"], icon: "🪜" },
-  missing:  { key: "missing",  name: "Missing",  tag: "Fill the blanks",       desc: "Some letters are missing from a word. Use the clue to fill in the blanks.", hue: "#F59E0B", grad: ["#D97706", "#FBBF24"], icon: "🕳️" },
+  missing:  { key: "missing",  name: "Mini Crossword", tag: "Solve the clues", desc: "Fill a tiny crossword from the clues. Intersections help every answer click into place.", hue: "#F59E0B", grad: ["#D97706", "#FBBF24"], icon: "▦" },
   blitz:    { key: "blitz",    name: "Blitz",    tag: "60-second word rush",   desc: "Make as many real words as you can from the letters before the 60-second clock runs out.", hue: "#F43F5E", grad: ["#E11D48", "#FB7185"], icon: "⚡" },
 } as const;
 

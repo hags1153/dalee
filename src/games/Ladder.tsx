@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef } from "react";
 import { View, Text, StyleSheet, Animated, ScrollView } from "react-native";
-import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, FunBanner, useStopwatch, haptic } from "../ui";
+import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { ladderScore, timeBonus, applyRestarts } from "../scoring";
 import { DICT4 } from "../wordbank";
@@ -11,7 +11,7 @@ const G = games.ladder;
 const diffOne = (a: string, b: string) => { let d = 0; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++; return d === 1; };
 const matchCount = (a: string, b: string) => { let m = 0; for (let i = 0; i < a.length; i++) if (a[i] === b[i]) m++; return m; };
 
-export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = false }: GameProps) {
+export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = false, nextGameName }: GameProps) {
   const finish = (r: Parameters<typeof onDone>[0]) => (forFun ? onClose() : onDone(r));
   const puzzle = useMemo(() => ladderPuzzle(seed), [seed]);
   const start = puzzle.start.toUpperCase(), end = puzzle.end.toUpperCase();
@@ -20,6 +20,7 @@ export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = f
   const [toast, setToast] = useState("");
   const [win, setWin] = useState(false);
   const [state, setState] = useState<"play" | "won">("play");
+  const [result, setResult] = useState<{ title: string; detail: string; score: number; won: boolean; payload: Parameters<typeof onDone>[0] } | null>(null);
   const secs = useStopwatch(state === "play");
   const shake = useRef(new Animated.Value(0)).current;
   const flash = (m: string, w = false) => { setWin(w); setToast(m); setTimeout(() => setToast(""), 1300); };
@@ -34,7 +35,14 @@ export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = f
     if (!DICT4.has(w.toLowerCase())) { flash("Not a word"); return doShake(); }
     if (chain.includes(w)) { flash("Already used"); return doShake(); }
     const nc = [...chain, w]; setChain(nc); setCur(""); haptic.tap("medium");
-    if (w === end) { haptic.success(); setState("won"); const steps = nc.length - 1; const score = applyRestarts(ladderScore(steps) + timeBonus(secs), restarts); flash(forFun ? `${steps} steps · ${secs}s! 🎉` : `${steps} steps · ${secs}s!  +${score}`, true); setTimeout(() => finish({ done: true, won: true, score }), 1100); }
+    if (w === end) {
+      haptic.success();
+      setState("won");
+      const steps = nc.length - 1;
+      const score = applyRestarts(ladderScore(steps) + timeBonus(secs), restarts);
+      flash(forFun ? `${steps} steps · ${secs}s!` : `${steps} steps · ${secs}s!  +${score}`, true);
+      setResult({ title: "Ladder Complete", detail: `${start} to ${end} in ${steps} steps`, score, won: true, payload: { done: true, won: true, score } });
+    }
   };
   const onKey = (k: string) => { if (state !== "play") return; if (k === "↵") return submit(); if (k === "⌫") return setCur((c) => c.slice(0, -1)); if (/[A-Z]/.test(k) && cur.length < 4) setCur((c) => c + k); };
 
@@ -72,6 +80,7 @@ export default function Ladder({ seed, onDone, onClose, restarts = 0, forFun = f
           <GradientButton label="SUBMIT" colors={G.grad as any} onPress={submit} disabled={cur.length !== 4 || state !== "play"} />
           <Keyboard onKey={onKey} showEnter={false} />
         </View>
+        {result && <ResultPanel title={result.title} detail={result.detail} score={result.score} won={result.won} forFun={forFun} nextLabel={nextGameName ? `Continue to ${nextGameName}` : "Continue"} onContinue={() => finish(result.payload)} />}
       </View>
     </ScreenBG>
   );

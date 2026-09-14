@@ -1,10 +1,30 @@
 // Deterministic "daily" engine — everyone gets the same puzzles each day.
 export const DAY_MS = 86_400_000;
-const EPOCH = new Date(2026, 0, 1).getTime();
+const EPOCH_UTC = Date.UTC(2026, 0, 1);
+const EASTERN_TZ = "America/New_York";
+
+function easternParts(d: Date) {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: EASTERN_TZ,
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      hourCycle: "h23",
+    }).formatToParts(d);
+    const get = (type: string) => Number(parts.find((part) => part.type === type)?.value || 0);
+    return { year: get("year"), month: get("month"), day: get("day"), hour: get("hour") };
+  } catch {
+    const shifted = new Date(d.getTime() - 5 * 60 * 60 * 1000);
+    return { year: shifted.getUTCFullYear(), month: shifted.getUTCMonth() + 1, day: shifted.getUTCDate(), hour: shifted.getUTCHours() };
+  }
+}
 
 export function dayIndex(d: Date = new Date()): number {
-  const midnight = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  return Math.floor((midnight - EPOCH) / DAY_MS);
+  const parts = easternParts(d);
+  const gameDate = Date.UTC(parts.year, parts.month - 1, parts.day) - (parts.hour < 4 ? DAY_MS : 0);
+  return Math.floor((gameDate - EPOCH_UTC) / DAY_MS);
 }
 
 // mulberry32 — small, fast, deterministic PRNG
@@ -36,5 +56,7 @@ export function shuffle<T>(arr: T[], seed: number): T[] {
 export const seedFor = (salt: number, d: Date = new Date()) => dayIndex(d) * 100 + salt;
 
 export function prettyDate(d: Date = new Date()): string {
-  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const parts = easternParts(d);
+  const gameDate = new Date(Date.UTC(parts.year, parts.month - 1, parts.day) - (parts.hour < 4 ? DAY_MS : 0));
+  return gameDate.toLocaleDateString("en-US", { timeZone: "UTC", weekday: "long", month: "long", day: "numeric" });
 }

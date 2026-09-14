@@ -58,7 +58,7 @@ export function Header({ title, subtitle, onClose, right }: { title: string; sub
         <Text style={styles.hTitle}>{title}</Text>
         {!!subtitle && <Text style={styles.hSub}>{subtitle}</Text>}
       </View>
-      <View style={styles.rightSlot}>{right}</View>
+      <View style={[styles.rightSlot, right ? styles.rightSlotWide : null]}>{right}</View>
     </View>
   );
 }
@@ -84,6 +84,27 @@ export function GameIntro({ text }: { text: string }) {
   return <Text style={styles.intro}>{text}</Text>;
 }
 
+export function ResultPanel({ title, detail, score, won, forFun, nextLabel, onContinue }: {
+  title: string;
+  detail: string;
+  score: number;
+  won: boolean;
+  forFun?: boolean;
+  nextLabel?: string;
+  onContinue: () => void;
+}) {
+  return (
+    <View style={styles.resultOverlay}>
+      <View style={styles.resultCard}>
+        <Text style={[styles.resultTitle, { color: won ? C.correct : C.present }]}>{title}</Text>
+        <Text style={styles.resultDetail}>{detail}</Text>
+        <Text style={styles.resultScore}>{forFun ? "For fun" : `+${score.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`}</Text>
+        <GradientButton label={nextLabel || "Continue"} onPress={onContinue} />
+      </View>
+    </View>
+  );
+}
+
 // Counts up once per second while `active`; resets nothing, just accumulates.
 export function useStopwatch(active: boolean) {
   const [seconds, setSeconds] = React.useState(0);
@@ -105,10 +126,10 @@ export function ProgressDots({ total, done, color }: { total: number; done: numb
   );
 }
 
-// On-screen keyboard shared by Wordle / Ladder / Missing.
+// On-screen keyboard shared by Wordle / Ladder / Mini Crossword.
 // showEnter=false hides the ↵ key so the game can use a dedicated SUBMIT button.
 export function Keyboard({ onKey, statuses, showEnter = true }: { onKey: (k: string) => void; statuses?: Record<string, "correct" | "present" | "absent">; showEnter?: boolean }) {
-  const col = (s?: string) => s === "correct" ? C.correct : s === "present" ? C.present : s === "absent" ? C.absent : C.surfaceHi;
+  const col = (s?: string) => s === "correct" ? C.correct : s === "present" ? C.present : s === "absent" ? "rgba(244,63,94,0.24)" : C.surfaceHi;
   const rows = ["QWERTYUIOP", "ASDFGHJKL", `${showEnter ? "↵" : ""}ZXCVBNM⌫`];
   return (
     <View style={{ gap: 7, paddingHorizontal: 4 }}>
@@ -136,15 +157,16 @@ const styles = StyleSheet.create({
   ghost: { paddingVertical: 14, paddingHorizontal: 24, borderRadius: radius.pill, alignItems: "center", borderWidth: 1.5, borderColor: C.hairline },
   ghostText: { color: C.textDim, fontSize: 16, fontWeight: "700" },
   card: { backgroundColor: C.surface, borderRadius: radius.lg, padding: 18, borderWidth: 1, borderColor: C.hairline },
-  header: { flexDirection: "row", alignItems: "center", paddingTop: Platform.OS === "android" ? 12 : 6, paddingBottom: 10 },
-  close: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  header: { flexDirection: "row", alignItems: "center", paddingTop: Platform.OS === "android" ? 12 : 6, paddingBottom: 10, gap: 8 },
+  close: { width: 44, height: 40, alignItems: "center", justifyContent: "center" },
   closeText: { color: C.textDim, fontSize: 20, fontWeight: "700" },
   hTitle: { color: C.text, ...font.h2 },
   hSub: { color: C.textFaint, ...font.label, marginTop: 2 },
   key: { minWidth: 30, flex: 1, maxWidth: 42, height: 52, alignItems: "center", justifyContent: "center", borderRadius: 8 },
   keyWide: { flex: 1.5, maxWidth: 58 },
   keyText: { color: C.text, fontSize: 16, fontWeight: "700", textAlign: "center", width: "100%" },
-  rightSlot: { minWidth: 40, height: 40, flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 6 },
+  rightSlot: { minWidth: 44, height: 40, flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 6 },
+  rightSlotWide: { minWidth: 120 },
   timer: { backgroundColor: C.surfaceHi, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill },
   timerT: { color: C.text, fontSize: 14, fontWeight: "800", fontVariant: ["tabular-nums"] },
   points: { backgroundColor: C.accent + "22", paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill },
@@ -152,4 +174,9 @@ const styles = StyleSheet.create({
   intro: { color: C.textDim, fontSize: 13.5, lineHeight: 19, textAlign: "center", marginTop: 10, paddingHorizontal: 10 },
   funBanner: { backgroundColor: C.present + "1F", borderColor: C.present + "66", borderWidth: 1, borderRadius: radius.md, paddingVertical: 9, paddingHorizontal: 14, marginTop: 10 },
   funT: { color: C.present, fontSize: 12.5, fontWeight: "700", textAlign: "center", lineHeight: 17 },
+  resultOverlay: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: 20, backgroundColor: "rgba(11,12,16,0.78)", alignItems: "center", justifyContent: "center", padding: 22 },
+  resultCard: { width: "100%", maxWidth: 360, backgroundColor: C.surface, borderColor: C.hairline, borderWidth: 1, borderRadius: radius.lg, padding: 22, gap: 12, alignItems: "center" },
+  resultTitle: { fontSize: 26, fontWeight: "900", textAlign: "center" },
+  resultDetail: { color: C.textDim, fontSize: 15, lineHeight: 21, textAlign: "center", fontWeight: "600" },
+  resultScore: { color: C.text, fontSize: 42, fontWeight: "900", textAlign: "center" },
 });

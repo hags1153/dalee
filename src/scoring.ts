@@ -18,7 +18,7 @@ export const scrambleScore = (wrong: number, hints: number) =>
 export const ladderScore = (steps: number) =>
   Math.max(350, 1150 - steps * 80);
 
-// Missing — clean fills win big; wrong guesses and hints bite.
+// Mini Crossword — clean solves win big; wrong submits and hints bite.
 export const MISSING_WRONG = 130, MISSING_HINT = 220;
 export const missingScore = (wrong: number, hints: number) =>
   Math.max(200, 1000 - wrong * MISSING_WRONG - hints * MISSING_HINT);
