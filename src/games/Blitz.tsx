@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Pressable, ScrollView, useWindowDimensions } from "react-native";
 import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, FunBanner, LiveScoreToggle, ResultPanel, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { shuffle } from "../daily";
@@ -12,6 +12,10 @@ const G = games.blitz;
 const DURATION = 60;
 
 export default function Blitz({ seed, onDone, onClose, onGoNext, restarts = 0, forFun = false, nextGameName, liveScoreVisible = true, onToggleLiveScore }: GameProps) {
+  const { width, height } = useWindowDimensions();
+  const compact = width < 360 || height < 680;
+  const tileW = compact ? 46 : 52;
+  const tileH = compact ? 52 : 60;
   const letters = useMemo(() => shuffle(blitzLetters(seed).split(""), seed), [seed]);
   const [used, setUsed] = useState<number[]>([]);
   const [found, setFound] = useState<string[]>([]);
@@ -71,26 +75,26 @@ export default function Blitz({ seed, onDone, onClose, onGoNext, restarts = 0, f
         <GameIntro text={games.blitz.desc} />
         {forFun && <FunBanner />}
         {state === "ready" && (
-          <View style={styles.ready}>
-            <Text style={styles.readyT}>Ready?</Text>
-            <Text style={styles.readySub}>The 60-second clock starts when you tap Start or choose your first letter.</Text>
+          <View style={[styles.ready, compact && styles.readyCompact]}>
+            <Text style={[styles.readyT, compact && styles.readyTCompact]}>Ready?</Text>
+            <Text style={[styles.readySub, compact && styles.readySubCompact]}>The 60-second clock starts when you tap Start or choose your first letter.</Text>
             <GradientButton label="Start Blitz" colors={G.grad as any} onPress={start} />
           </View>
         )}
         <View style={styles.timerTrack}><View style={[styles.timerFill, { width: `${(time / DURATION) * 100}%`, backgroundColor: time <= 10 ? C.present : G.hue }]} /></View>
         <Text style={[styles.time, time <= 10 && { color: C.present }]}>{time}s</Text>
 
-        <View style={styles.current}><Text style={styles.currentT}>{word || " "}</Text>{!!flashMsg && <Text style={styles.flash}>{flashMsg}</Text>}</View>
+        <View style={[styles.current, compact && styles.currentCompact]}><Text style={[styles.currentT, compact && styles.currentTCompact]}>{word || " "}</Text>{!!flashMsg && <Text style={styles.flash}>{flashMsg}</Text>}</View>
 
-        <View style={styles.tiles}>
+        <View style={[styles.tiles, { gap: compact ? 7 : 9 }]}>
           {letters.map((ch, i) => (
-            <Pressable key={i} onPress={() => tapTile(i)} disabled={used.includes(i)} style={[styles.tile, used.includes(i) && styles.tileUsed]}>
-              <Text style={[styles.tileT, used.includes(i) && { color: C.textFaint }]}>{ch}</Text>
+            <Pressable key={i} onPress={() => tapTile(i)} disabled={used.includes(i)} style={[styles.tile, { width: tileW, height: tileH }, used.includes(i) && styles.tileUsed]}>
+              <Text style={[styles.tileT, compact && styles.tileTCompact, used.includes(i) && { color: C.textFaint }]}>{ch}</Text>
             </Pressable>
           ))}
         </View>
 
-        <View style={{ flexDirection: "row", gap: 12, marginTop: 18 }}>
+        <View style={{ flexDirection: "row", gap: compact ? 8 : 12, marginTop: compact ? 12 : 18 }}>
           <GhostButton label="⌫" onPress={del} style={{ flex: 1 }} />
           <GradientButton label="Enter" colors={G.grad as any} onPress={enter} style={{ flex: 2 }} />
         </View>
@@ -106,20 +110,26 @@ export default function Blitz({ seed, onDone, onClose, onGoNext, restarts = 0, f
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 50 },
+  wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 42 },
   ready: { backgroundColor: C.surface, borderColor: G.hue + "66", borderWidth: 1, borderRadius: radius.md, padding: 16, gap: 10, marginTop: 14 },
+  readyCompact: { padding: 10, gap: 6, marginTop: 8 },
   readyT: { color: C.text, fontSize: 22, fontWeight: "900", textAlign: "center" },
+  readyTCompact: { fontSize: 18 },
   readySub: { color: C.textDim, fontSize: 14, fontWeight: "600", lineHeight: 20, textAlign: "center" },
+  readySubCompact: { fontSize: 12, lineHeight: 16 },
   timerTrack: { height: 8, borderRadius: 4, backgroundColor: C.hairline, marginTop: 8, overflow: "hidden" },
   timerFill: { height: 8, borderRadius: 4 },
   time: { color: C.textDim, textAlign: "center", fontWeight: "700", marginTop: 6 },
   current: { height: 60, alignItems: "center", justifyContent: "center", marginTop: 14 },
+  currentCompact: { height: 46, marginTop: 8 },
   currentT: { color: C.text, fontSize: 32, fontWeight: "700", fontFamily: tileFont, letterSpacing: 4 },
+  currentTCompact: { fontSize: 26 },
   flash: { position: "absolute", right: 8, color: C.correct, fontWeight: "800", fontSize: 18 },
   tiles: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 9, marginTop: 8 },
-  tile: { width: 52, height: 60, borderRadius: radius.md, backgroundColor: C.surfaceHi, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: C.hairline },
+  tile: { borderRadius: radius.md, backgroundColor: C.surfaceHi, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: C.hairline },
   tileUsed: { backgroundColor: "transparent", borderStyle: "dashed" },
   tileT: { color: "#fff", fontSize: 24, fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%" },
+  tileTCompact: { fontSize: 21 },
   foundH: { color: C.textFaint, fontWeight: "700", marginTop: 16 },
   foundWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingBottom: 16 },
   foundChip: { backgroundColor: C.surface, paddingHorizontal: 12, paddingVertical: 7, borderRadius: radius.pill, borderWidth: 1, borderColor: C.hairline },

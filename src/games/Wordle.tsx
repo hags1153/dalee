@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useCallback } from "react";
-import { View, Text, StyleSheet, Animated, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Animated, useWindowDimensions } from "react-native";
 import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, LiveScoreToggle, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { MIN_GAME_SCORE, wordleScore, timeBonus, applyRestarts } from "../scoring";
@@ -9,8 +9,6 @@ import { GameProps } from "./types";
 
 type St = "correct" | "present" | "absent";
 const LEN = 5, MAX = 6;
-const { width } = Dimensions.get("window");
-const TILE = Math.min(56, Math.floor((width - 52) / LEN) - 6);
 const G = games.wordle;
 
 function evaluate(guess: string, answer: string): St[] {
@@ -24,6 +22,10 @@ function evaluate(guess: string, answer: string): St[] {
 const col = (s: St) => s === "correct" ? C.correct : s === "present" ? C.present : C.absent;
 
 export default function Wordle({ seed, onDone, onClose, onGoNext, restarts = 0, forFun = false, nextGameName, liveScoreVisible = true, onToggleLiveScore }: GameProps) {
+  const { width, height } = useWindowDimensions();
+  const compact = width < 360 || height < 680;
+  const tile = Math.max(34, Math.min(56, Math.floor((width - 52) / LEN) - 6, compact ? Math.floor((height - 315) / MAX) : 56));
+  const gap = compact ? 5 : 7;
   const finish = (r: Parameters<typeof onDone>[0], action: "home" | "next" = "home") => (forFun ? (action === "next" ? onGoNext?.() || onClose() : onClose()) : onDone(r, action));
   const answer = useMemo(() => wordleAnswer(seed), [seed]);
   const [guesses, setGuesses] = useState<string[]>([]);
@@ -100,19 +102,19 @@ export default function Wordle({ seed, onDone, onClose, onGoNext, restarts = 0, 
         <GameIntro text={games.wordle.desc} />
         {forFun && <FunBanner />}
         {!!toast && <View style={[styles.toast, win && styles.toastWin]}><Text style={[styles.toastT, win && styles.toastTWin]}>{toast}</Text></View>}
-        <View style={styles.grid}>
+        <View style={[styles.grid, { gap, marginTop: compact ? 4 : 8 }]}>
           {rows.map((row, r) => {
             const active = r === guesses.length && state === "play";
             return (
-              <Animated.View key={r} style={[styles.row, active ? { transform: [{ translateX: shake }] } : null]}>
+              <Animated.View key={r} style={[styles.row, { gap }, active ? { transform: [{ translateX: shake }] } : null]}>
                 {row.l.map((ch, i) => {
                   const s = row.e[i]; const filled = ch.trim().length > 0;
                   return (
-                    <View key={i} style={[styles.tile,
+                    <View key={i} style={[styles.tile, { width: tile, height: tile },
                       s ? { backgroundColor: col(s), borderColor: col(s) }
                         : filled ? { backgroundColor: C.surfaceHi, borderColor: C.accent }
                         : { backgroundColor: "transparent", borderColor: C.hairline }]}>
-                      <Text style={styles.tileT}>{ch.trim()}</Text>
+                      <Text style={[styles.tileT, { fontSize: tile * 0.46 }]}>{ch.trim()}</Text>
                     </View>
                   );
                 })}
@@ -120,7 +122,7 @@ export default function Wordle({ seed, onDone, onClose, onGoNext, restarts = 0, 
             );
           })}
         </View>
-        <View style={{ marginTop: "auto", gap: 12, paddingBottom: 14 }}>
+        <View style={{ marginTop: "auto", gap: compact ? 8 : 12, paddingBottom: compact ? 8 : 14 }}>
           <GradientButton label="SUBMIT" colors={G.grad as any} onPress={submit} disabled={cur.length !== LEN || state !== "play"} />
           <Keyboard onKey={onKey} statuses={keyStatuses} showEnter={false} />
         </View>
@@ -131,11 +133,11 @@ export default function Wordle({ seed, onDone, onClose, onGoNext, restarts = 0, 
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 50 },
+  wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 42 },
   grid: { alignItems: "center", gap: 7, marginTop: 8 },
   row: { flexDirection: "row", gap: 7 },
-  tile: { width: TILE, height: TILE, borderWidth: 2, borderRadius: radius.sm, alignItems: "center", justifyContent: "center" },
-  tileT: { color: "#fff", fontSize: TILE * 0.46, fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%", includeFontPadding: false },
+  tile: { borderWidth: 2, borderRadius: radius.sm, alignItems: "center", justifyContent: "center" },
+  tileT: { color: "#fff", fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%", includeFontPadding: false },
   toast: { position: "absolute", top: 96, alignSelf: "center", zIndex: 10, backgroundColor: C.text, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
   toastT: { color: C.bg0, fontWeight: "800" },
   toastWin: { backgroundColor: C.correct },

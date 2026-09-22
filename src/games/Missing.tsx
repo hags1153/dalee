@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef } from "react";
-import { View, Text, StyleSheet, Animated, Pressable, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Animated, Pressable, ScrollView, useWindowDimensions } from "react-native";
 import { ScreenBG, Header, Keyboard, GradientButton, GhostButton, GameIntro, TimerBadge, LiveScoreToggle, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { missingScore, timeBonus, applyRestarts, MISSING_HINT, MISSING_WRONG } from "../scoring";
@@ -20,6 +20,9 @@ function cellsFor(entry: MiniCrosswordEntry) {
 }
 
 export default function Missing({ seed, onDone, onClose, onGoNext, restarts = 0, forFun = false, nextGameName, liveScoreVisible = true, onToggleLiveScore }: GameProps) {
+  const { width, height } = useWindowDimensions();
+  const compact = width < 360 || height < 680;
+  const cellSize = Math.max(42, Math.min(52, Math.floor((width - 46) / SIZE)));
   const finish = (r: Parameters<typeof onDone>[0], action: "home" | "next" = "home") => (forFun ? (action === "next" ? onGoNext?.() || onClose() : onClose()) : onDone(r, action));
   const puzzle = useMemo(() => miniCrossword(seed), [seed]);
   const entries = puzzle.entries;
@@ -161,12 +164,12 @@ export default function Missing({ seed, onDone, onClose, onGoNext, restarts = 0,
         {forFun && <FunBanner />}
         {!!toast && <View style={[styles.toast, win && styles.toastWin]}><Text style={styles.toastT}>{toast}</Text></View>}
 
-        <Pressable onPress={() => selectEntry(selectedEntry)} style={styles.activeClue}>
+        <Pressable onPress={() => selectEntry(selectedEntry)} style={[styles.activeClue, compact && styles.activeClueCompact]}>
           <Text style={styles.activeId}>{activeEntry.id}</Text>
-          <Text style={styles.activeText}>{activeEntry.clue}</Text>
+          <Text style={[styles.activeText, compact && styles.activeTextCompact]} numberOfLines={compact ? 2 : undefined}>{activeEntry.clue}</Text>
         </Pressable>
 
-        <Animated.View style={[styles.board, { transform: [{ translateX: shake }] }]}>
+        <Animated.View style={[styles.board, { marginTop: compact ? 8 : 14, transform: [{ translateX: shake }] }]}>
           {Array.from({ length: SIZE }).map((_, row) => (
             <View key={row} style={styles.row}>
               {Array.from({ length: SIZE }).map((__, col) => {
@@ -176,9 +179,9 @@ export default function Missing({ seed, onDone, onClose, onGoNext, restarts = 0,
                 const selected = selectedCell === key;
                 return (
                   <Pressable key={key} disabled={blocked || state !== "play"} onPress={() => selectCell(key)}
-                    style={[styles.cell, blocked && styles.block, active && styles.activeCell, selected && styles.selectedCell]}>
+                    style={[styles.cell, { width: cellSize, height: cellSize }, blocked && styles.block, active && styles.activeCell, selected && styles.selectedCell]}>
                     {!!clueNumbers[key] && <Text style={styles.num}>{clueNumbers[key]}</Text>}
-                    <Text style={styles.cellT}>{fills[key] || ""}</Text>
+                    <Text style={[styles.cellT, { fontSize: Math.min(26, cellSize * 0.5) }]}>{fills[key] || ""}</Text>
                   </Pressable>
                 );
               })}
@@ -186,17 +189,17 @@ export default function Missing({ seed, onDone, onClose, onGoNext, restarts = 0,
           ))}
         </Animated.View>
 
-        <ScrollView style={styles.clues} contentContainerStyle={styles.clueWrap}>
+        <ScrollView style={[styles.clues, compact && styles.cluesCompact]} contentContainerStyle={[styles.clueWrap, compact && styles.clueWrapCompact]}>
           {entries.map((entry, i) => (
-            <Pressable key={entry.id} onPress={() => selectEntry(i)} style={[styles.clue, i === selectedEntry && styles.clueActive]}>
+            <Pressable key={entry.id} onPress={() => selectEntry(i)} style={[styles.clue, compact && styles.clueCompact, i === selectedEntry && styles.clueActive]}>
               <Text style={styles.clueId}>{entry.id}</Text>
-              <Text style={styles.clueT}>{entry.clue}</Text>
+              <Text style={[styles.clueT, compact && styles.clueTCompact]} numberOfLines={compact ? 1 : undefined}>{entry.clue}</Text>
             </Pressable>
           ))}
         </ScrollView>
 
-        <View style={{ marginTop: "auto", gap: 12, paddingBottom: 14 }}>
-          <View style={{ flexDirection: "row", gap: 12 }}>
+        <View style={{ marginTop: "auto", gap: compact ? 8 : 12, paddingBottom: compact ? 8 : 14 }}>
+          <View style={{ flexDirection: "row", gap: compact ? 8 : 12 }}>
             <GhostButton label={`Hint -${MISSING_HINT}`} onPress={hint} style={{ flex: 1 }} />
             <GradientButton label="Submit" colors={G.grad as any} onPress={submit} disabled={!complete} style={{ flex: 1 }} />
           </View>
@@ -209,25 +212,31 @@ export default function Missing({ seed, onDone, onClose, onGoNext, restarts = 0,
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 50 },
+  wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 42 },
   toast: { position: "absolute", top: 96, alignSelf: "center", zIndex: 10, backgroundColor: C.surfaceHi, borderWidth: 1, borderColor: C.hairline, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
   toastWin: { backgroundColor: C.correct, borderColor: C.correct },
   toastT: { color: "#fff", fontWeight: "800" },
   activeClue: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.surfaceHi, borderWidth: 1.5, borderColor: G.hue, borderRadius: radius.md, paddingVertical: 11, paddingHorizontal: 14, marginTop: 14 },
+  activeClueCompact: { paddingVertical: 8, paddingHorizontal: 10, marginTop: 8 },
   activeId: { color: G.hue, fontSize: 14, fontWeight: "900", width: 30 },
   activeText: { color: C.text, fontSize: 15, fontWeight: "800", flex: 1 },
+  activeTextCompact: { fontSize: 13, lineHeight: 17 },
   board: { alignSelf: "center", marginTop: 14, borderWidth: 2, borderColor: C.hairline, backgroundColor: C.hairline },
   row: { flexDirection: "row" },
-  cell: { width: 52, height: 52, backgroundColor: C.surfaceHi, borderWidth: 1, borderColor: C.hairline, alignItems: "center", justifyContent: "center" },
+  cell: { backgroundColor: C.surfaceHi, borderWidth: 1, borderColor: C.hairline, alignItems: "center", justifyContent: "center" },
   block: { backgroundColor: C.bg0 },
   activeCell: { backgroundColor: "#3B2F20" },
   selectedCell: { borderColor: G.hue, borderWidth: 2 },
   num: { position: "absolute", top: 3, left: 4, color: C.textFaint, fontSize: 9, fontWeight: "800" },
-  cellT: { color: "#fff", fontSize: 26, fontWeight: "800", fontFamily: tileFont, textAlign: "center", width: "100%", includeFontPadding: false },
+  cellT: { color: "#fff", fontWeight: "800", fontFamily: tileFont, textAlign: "center", width: "100%", includeFontPadding: false },
   clues: { maxHeight: 130, marginTop: 14 },
+  cluesCompact: { maxHeight: 86, marginTop: 8 },
   clueWrap: { gap: 8, paddingBottom: 4 },
+  clueWrapCompact: { gap: 5 },
   clue: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: C.surface, borderWidth: 1, borderColor: C.hairline, borderRadius: radius.sm, paddingVertical: 9, paddingHorizontal: 12 },
+  clueCompact: { paddingVertical: 6, paddingHorizontal: 10 },
   clueActive: { borderColor: G.hue, backgroundColor: C.surfaceHi },
   clueId: { color: G.hue, fontSize: 13, fontWeight: "900", width: 28 },
   clueT: { color: C.text, fontSize: 14, fontWeight: "700", flex: 1 },
+  clueTCompact: { fontSize: 12 },
 });

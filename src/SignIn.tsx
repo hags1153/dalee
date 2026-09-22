@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
+import { View, Text, StyleSheet, Pressable, Alert, ScrollView } from "react-native";
 import { ScreenBG, Header, GhostButton, GradientButton, haptic } from "./ui";
 import { palette as C, radius, gradients } from "./theme";
 import { LinearGradient } from "expo-linear-gradient";
@@ -14,7 +14,7 @@ export default function SignIn({ onClose, onLeaderboard, onAchievements, onDashb
   const syncSoon = () => { haptic.tap(); Alert.alert("Saved on this device", "Game Center leaderboards are available now. Cross-device streak sync is planned for a later update."); };
   return (
     <ScreenBG>
-      <View style={styles.wrap}>
+      <ScrollView contentContainerStyle={styles.wrap} showsVerticalScrollIndicator={false}>
         <Header title="Your Dalee" onClose={onClose} />
         <View style={styles.hero}>
           <LinearGradient colors={gradients.brand as any} style={styles.logo}><Text style={styles.logoT}>D</Text></LinearGradient>
@@ -37,14 +37,14 @@ export default function SignIn({ onClose, onLeaderboard, onAchievements, onDashb
           <GhostButton label="Play as guest" onPress={onClose} />
         </View>
         <Text style={styles.foot}>Dalee is free to play. We don't collect any personal data.</Text>
-      </View>
+      </ScrollView>
     </ScreenBG>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: 22, paddingTop: 50, paddingBottom: 30 },
-  hero: { alignItems: "center", marginTop: 20, marginBottom: "auto", paddingTop: 30 },
+  wrap: { flexGrow: 1, paddingHorizontal: 18, paddingTop: 42, paddingBottom: 26 },
+  hero: { alignItems: "center", marginTop: 14, marginBottom: "auto", paddingTop: 18 },
   logo: { width: 88, height: 88, borderRadius: 24, alignItems: "center", justifyContent: "center" },
   logoT: { color: "#fff", fontSize: 48, fontWeight: "900" },
   title: { color: C.text, fontSize: 26, fontWeight: "800", textAlign: "center", marginTop: 24 },

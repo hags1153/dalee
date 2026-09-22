@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef } from "react";
-import { View, Text, StyleSheet, Animated, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Animated, ScrollView, useWindowDimensions } from "react-native";
 import { ScreenBG, Header, Keyboard, GradientButton, GameIntro, TimerBadge, LiveScoreToggle, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { ladderScore, timeBonus, applyRestarts } from "../scoring";
@@ -12,6 +12,10 @@ const diffOne = (a: string, b: string) => { let d = 0; for (let i = 0; i < a.len
 const matchCount = (a: string, b: string) => { let m = 0; for (let i = 0; i < a.length; i++) if (a[i] === b[i]) m++; return m; };
 
 export default function Ladder({ seed, onDone, onClose, onGoNext, restarts = 0, forFun = false, nextGameName, liveScoreVisible = true, onToggleLiveScore }: GameProps) {
+  const { width, height } = useWindowDimensions();
+  const compact = width < 360 || height < 680;
+  const cellW = compact ? 42 : 46;
+  const cellH = compact ? 45 : 50;
   const finish = (r: Parameters<typeof onDone>[0], action: "home" | "next" = "home") => (forFun ? (action === "next" ? onGoNext?.() || onClose() : onClose()) : onDone(r, action));
   const puzzle = useMemo(() => ladderPuzzle(seed), [seed]);
   const start = puzzle.start.toUpperCase(), end = puzzle.end.toUpperCase();
@@ -72,8 +76,8 @@ export default function Ladder({ seed, onDone, onClose, onGoNext, restarts = 0, 
           : tone === "cur" ? { borderColor: G.hue, backgroundColor: filled ? C.surfaceHi : "transparent" }
           : { backgroundColor: G.hue, borderColor: G.hue };
         return (
-          <View key={i} style={[styles.cell, st]}>
-            <Text style={styles.cellT}>{ch.trim()}</Text>
+          <View key={i} style={[styles.cell, { width: cellW, height: cellH }, st]}>
+            <Text style={[styles.cellT, compact && styles.cellTCompact]}>{ch.trim()}</Text>
           </View>
         );
       })}
@@ -86,14 +90,14 @@ export default function Ladder({ seed, onDone, onClose, onGoNext, restarts = 0, 
         <Header title="Ladder" subtitle="Change one letter at a time" onClose={onClose} right={<><LiveScoreToggle points={liveScore} visible={liveScoreVisible} onToggle={onToggleLiveScore} /><TimerBadge seconds={secs} /></>} />
         <GameIntro text={games.ladder.desc} />
         {forFun && <FunBanner />}
-        <View style={styles.goal}><Text style={styles.goalT}>{start}</Text><Text style={styles.arrow}>→</Text><Text style={[styles.goalT, { color: C.correct }]}>{end}</Text></View>
+        <View style={[styles.goal, compact && styles.goalCompact]}><Text style={[styles.goalT, compact && styles.goalTCompact]}>{start}</Text><Text style={styles.arrow}>→</Text><Text style={[styles.goalT, compact && styles.goalTCompact, { color: C.correct }]}>{end}</Text></View>
         {!!toast && <View style={[styles.toast, win && styles.toastWin]}><Text style={[styles.toastT, win && styles.toastTWin]}>{toast}</Text></View>}
-        <ScrollView contentContainerStyle={{ alignItems: "center", gap: 6, paddingVertical: 10 }} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ alignItems: "center", gap: compact ? 4 : 6, paddingVertical: compact ? 6 : 10 }} style={{ flex: 1 }}>
           {chain.map((w, i) => <Word key={i} w={w} tone={i === 0 ? "start" : w === end ? "end" : "step"} />)}
           {state === "play" && <Animated.View style={{ transform: [{ translateX: shake }] }}><Word w={cur} tone="cur" /></Animated.View>}
           <Text style={styles.match}>{state === "play" ? `${matchCount((cur || chain[chain.length - 1]), end)}/4 letters match the target` : "🏆 You reached the target!"}</Text>
         </ScrollView>
-        <View style={{ gap: 12, paddingBottom: 14 }}>
+        <View style={{ gap: compact ? 8 : 12, paddingBottom: compact ? 8 : 14 }}>
           <GradientButton label="SUBMIT" colors={G.grad as any} onPress={submit} disabled={cur.length !== 4 || state !== "play"} />
           <Keyboard onKey={onKey} showEnter={false} />
         </View>
@@ -104,13 +108,16 @@ export default function Ladder({ seed, onDone, onClose, onGoNext, restarts = 0, 
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 50 },
+  wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 42 },
   goal: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 14, marginTop: 10 },
+  goalCompact: { gap: 10, marginTop: 4 },
   goalT: { color: C.text, fontSize: 24, fontWeight: "800", letterSpacing: 3 },
+  goalTCompact: { fontSize: 21 },
   arrow: { color: C.textFaint, fontSize: 22 },
   wrow: { flexDirection: "row", gap: 6 },
-  cell: { width: 46, height: 50, borderRadius: radius.sm, borderWidth: 2, alignItems: "center", justifyContent: "center" },
+  cell: { borderRadius: radius.sm, borderWidth: 2, alignItems: "center", justifyContent: "center" },
   cellT: { color: "#fff", fontSize: 22, fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%", includeFontPadding: false },
+  cellTCompact: { fontSize: 20 },
   match: { color: C.textFaint, marginTop: 10, fontWeight: "600" },
   toast: { position: "absolute", top: 108, alignSelf: "center", zIndex: 10, backgroundColor: C.text, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
   toastT: { color: C.bg0, fontWeight: "800" },

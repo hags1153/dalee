@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef } from "react";
-import { View, Text, StyleSheet, Pressable, Animated } from "react-native";
+import { View, Text, StyleSheet, Pressable, Animated, useWindowDimensions } from "react-native";
 import { ScreenBG, Header, GradientButton, GhostButton, GameIntro, TimerBadge, LiveScoreToggle, FunBanner, ResultPanel, useStopwatch, haptic } from "../ui";
 import { palette as C, games, radius, tileFont } from "../theme";
 import { shuffle } from "../daily";
@@ -10,8 +10,13 @@ import { GameProps } from "./types";
 const G = games.scramble;
 
 export default function Scramble({ seed, onDone, onClose, onGoNext, restarts = 0, forFun = false, nextGameName, liveScoreVisible = true, onToggleLiveScore }: GameProps) {
+  const { width, height } = useWindowDimensions();
+  const compact = width < 360 || height < 680;
   const finish = (r: Parameters<typeof onDone>[0], action: "home" | "next" = "home") => (forFun ? (action === "next" ? onGoNext?.() || onClose() : onClose()) : onDone(r, action));
   const answer = useMemo(() => scrambleAnswer(seed), [seed]);
+  const slotGap = compact ? 5 : 8;
+  const slotSize = Math.max(34, Math.min(54, Math.floor((width - 40 - slotGap * (answer.length - 1)) / answer.length)));
+  const chipSize = compact ? 50 : 58;
   const pool = useMemo(() => {
     let s = shuffle(answer.split(""), seed);
     if (s.join("") === answer) s = shuffle(answer.split(""), seed + 7);
@@ -79,25 +84,25 @@ export default function Scramble({ seed, onDone, onClose, onGoNext, restarts = 0
         {!!toast && <View style={[styles.toast, win && styles.toastWin]}><Text style={styles.toastT}>{toast}</Text></View>}
         <Text style={styles.hint}>{answer.length} letters</Text>
 
-        <Animated.View style={[styles.slots, { transform: [{ translateX: shake }] }]}>
+        <Animated.View style={[styles.slots, { gap: slotGap, marginTop: compact ? 16 : 30, transform: [{ translateX: shake }] }]}>
           {Array.from({ length: answer.length }).map((_, i) => (
-            <View key={i} style={[styles.slot, { borderColor: state === "won" ? C.correct : C.hairline, backgroundColor: state === "won" ? C.correct : "transparent" }]}>
-              <Text style={styles.slotT}>{built[i] || ""}</Text>
+            <View key={i} style={[styles.slot, { width: slotSize, height: slotSize + 8, borderColor: state === "won" ? C.correct : C.hairline, backgroundColor: state === "won" ? C.correct : "transparent" }]}>
+              <Text style={[styles.slotT, { fontSize: Math.min(28, slotSize * 0.52) }]}>{built[i] || ""}</Text>
             </View>
           ))}
         </Animated.View>
 
-        <View style={styles.pool}>
+        <View style={[styles.pool, { marginTop: compact ? 24 : 48, gap: compact ? 8 : 10 }]}>
           {pool.map((ch, i) => (
             <Pressable key={i} onPress={() => place(i)} disabled={usedSet.has(i)}
-              style={[styles.chip, usedSet.has(i) && styles.chipUsed]}>
-              <Text style={[styles.chipT, usedSet.has(i) && { color: C.textFaint }]}>{ch}</Text>
+              style={[styles.chip, { width: chipSize, height: chipSize + 8 }, usedSet.has(i) && styles.chipUsed]}>
+              <Text style={[styles.chipT, { fontSize: compact ? 24 : 28 }, usedSet.has(i) && { color: C.textFaint }]}>{ch}</Text>
             </Pressable>
           ))}
         </View>
 
-        <View style={{ marginTop: "auto", gap: 12, paddingBottom: 16 }}>
-          <View style={{ flexDirection: "row", gap: 12 }}>
+        <View style={{ marginTop: "auto", gap: compact ? 8 : 12, paddingBottom: compact ? 8 : 16 }}>
+          <View style={{ flexDirection: "row", gap: compact ? 8 : 12 }}>
             <GhostButton label="Delete" onPress={back} style={{ flex: 1 }} />
             <GhostButton label={`Hint -${SCRAMBLE_HINT}`} onPress={hint} style={{ flex: 1 }} />
           </View>
@@ -110,16 +115,16 @@ export default function Scramble({ seed, onDone, onClose, onGoNext, restarts = 0
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 50 },
+  wrap: { flex: 1, paddingHorizontal: 16, paddingTop: 42 },
   toast: { position: "absolute", top: 96, alignSelf: "center", zIndex: 10, backgroundColor: C.surfaceHi, borderWidth: 1, borderColor: C.hairline, paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill },
   toastWin: { backgroundColor: C.correct, borderColor: C.correct },
   toastT: { color: "#fff", fontWeight: "800" },
   hint: { color: C.textFaint, textAlign: "center", marginTop: 8, fontWeight: "600" },
   slots: { flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 30 },
-  slot: { width: 54, height: 62, borderRadius: radius.sm, borderWidth: 2, alignItems: "center", justifyContent: "center" },
-  slotT: { color: "#fff", fontSize: 28, fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%" },
+  slot: { borderRadius: radius.sm, borderWidth: 2, alignItems: "center", justifyContent: "center" },
+  slotT: { color: "#fff", fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%" },
   pool: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 10, marginTop: 48 },
-  chip: { width: 58, height: 66, borderRadius: radius.md, backgroundColor: C.surfaceHi, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: C.hairline },
+  chip: { borderRadius: radius.md, backgroundColor: C.surfaceHi, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: C.hairline },
   chipUsed: { backgroundColor: "transparent", borderStyle: "dashed" },
-  chipT: { color: "#fff", fontSize: 28, fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%" },
+  chipT: { color: "#fff", fontWeight: "700", fontFamily: tileFont, textAlign: "center", width: "100%" },
 });

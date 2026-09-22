@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable, ScrollView, Share } from "react-native";
+import { View, Text, StyleSheet, Pressable, ScrollView, Share, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScreenBG, GradientButton, GhostButton, haptic } from "./ui";
 import { palette as C, games, gradients, radius, font, shadow, CIRCUIT, GameKey } from "./theme";
@@ -12,6 +12,8 @@ export default function Hub({ day, dayState, stats, onPlay, onSignIn, onLeaderbo
   day: number; dayState: DayState; stats: Stats;
   onPlay: (k: GameKey) => void; onSignIn: () => void; onLeaderboard: (period: LeaderboardPeriod) => void; onAchievements: () => void; onDashboard: () => void;
 }) {
+  const { width } = useWindowDimensions();
+  const compact = width < 360;
   const progress = circuitProgress(dayState);
   const done = circuitComplete(dayState);
   const total = dayTotal(dayState);
@@ -37,7 +39,7 @@ export default function Hub({ day, dayState, stats, onPlay, onSignIn, onLeaderbo
         {/* score showcase */}
         <LinearGradient colors={gradients.score as any} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.scoreCard, shadow.glow(C.accent)]}>
           <Text style={styles.scoreLabel}>{done ? "TODAY — COMPLETE 🎉" : "TODAY'S SCORE"}</Text>
-          <Text style={styles.scoreBig}>{fmt(total)}</Text>
+          <Text style={styles.scoreBig} numberOfLines={1} adjustsFontSizeToFit>{fmt(total)}</Text>
           <View style={styles.pips}>
             {CIRCUIT.map((k) => (
               <View key={k} style={[styles.pip, dayState.results[k]?.done && styles.pipOn]} />
@@ -54,12 +56,12 @@ export default function Hub({ day, dayState, stats, onPlay, onSignIn, onLeaderbo
           <View style={styles.divider} />
           <Stat label="TOTAL" value={fmt(stats.totalScore)} />
         </View>
-        <View style={styles.leaderboards}>
+        <View style={[styles.leaderboards, compact && styles.tightButtonRow]}>
           <GhostButton label="Daily" onPress={() => onLeaderboard("daily")} style={styles.leaderboardBtn} />
           <GhostButton label="Weekly" onPress={() => onLeaderboard("weekly")} style={styles.leaderboardBtn} />
           <GhostButton label="Yearly" onPress={() => onLeaderboard("yearly")} style={styles.leaderboardBtn} />
         </View>
-        <View style={styles.gameCenterRow}>
+        <View style={[styles.gameCenterRow, compact && styles.tightButtonRow]}>
           <GhostButton label="Share" onPress={shareScore} style={styles.gameCenterBtn} />
           <GhostButton label="Achievements" onPress={onAchievements} style={styles.gameCenterBtn} />
           <GhostButton label="Game Center" onPress={onDashboard} style={styles.gameCenterBtn} />
@@ -118,7 +120,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 18, paddingTop: 60, paddingBottom: 40 },
+  wrap: { paddingHorizontal: 16, paddingTop: 52, paddingBottom: 34 },
   top: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
   brand: { color: C.text, fontSize: 38, fontWeight: "900", letterSpacing: 2 },
   date: { color: C.textFaint, ...font.label, marginTop: 2 },
@@ -127,7 +129,7 @@ const styles = StyleSheet.create({
 
   scoreCard: { borderRadius: radius.xl, paddingVertical: 22, paddingHorizontal: 20, marginTop: 20, alignItems: "center" },
   scoreLabel: { color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: "800", letterSpacing: 1.5 },
-  scoreBig: { color: "#fff", fontSize: 56, fontWeight: "900", letterSpacing: 1, marginTop: 2 },
+  scoreBig: { color: "#fff", fontSize: 52, fontWeight: "900", letterSpacing: 1, marginTop: 2 },
   pips: { flexDirection: "row", gap: 8, marginTop: 8 },
   pip: { width: 26, height: 6, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.28)" },
   pipOn: { backgroundColor: "#fff" },
@@ -135,9 +137,10 @@ const styles = StyleSheet.create({
 
   stats: { flexDirection: "row", backgroundColor: C.surface, borderRadius: radius.lg, paddingVertical: 16, marginTop: 16, borderWidth: 1, borderColor: C.hairline },
   leaderboards: { flexDirection: "row", gap: 8, marginTop: 12 },
-  leaderboardBtn: { flex: 1, paddingHorizontal: 8 },
+  tightButtonRow: { gap: 6 },
+  leaderboardBtn: { flex: 1, paddingHorizontal: 4 },
   gameCenterRow: { flexDirection: "row", gap: 8, marginTop: 8 },
-  gameCenterBtn: { flex: 1, paddingHorizontal: 6 },
+  gameCenterBtn: { flex: 1, paddingHorizontal: 3 },
   divider: { width: 1, backgroundColor: C.hairline },
   statV: { color: C.text, fontSize: 20, fontWeight: "800" },
   statL: { color: C.textFaint, fontSize: 11, fontWeight: "700", letterSpacing: 1, marginTop: 3 },
