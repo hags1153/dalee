@@ -110,8 +110,9 @@ src/
 - Native changes (new packages, permissions, config plugins) still require a full EAS build + submit.
 - App launch also runs `src/VersionGate.tsx`, which checks for OTA updates immediately and fetches
   `https://hags1153.github.io/dalee/version.json`. If the installed `APP_VERSION` is below
-  `minimumVersion`/`latestVersion`, Dalee shows an App Store update screen before gameplay. Keep
-  `src/version.ts` and `docs/version.json` in sync when controlling releases.
+  `minimumVersion`, Dalee shows an App Store update screen before gameplay. If
+  `requireLatestVersion` is `true`, the gate uses `latestVersion` instead, forcing every older build
+  to update from the App Store. Keep `src/version.ts` and `docs/version.json` in sync when controlling releases.
 
 Versioning rules:
 - JS-only OTA: keep `app.json` `expo.version` unchanged so the update targets the current binary

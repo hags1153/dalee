@@ -8,6 +8,7 @@ import { APP_STORE_URL, APP_VERSION, CONTENT_VERSION, VERSION_URL } from "./vers
 type VersionManifest = {
   latestVersion?: string;
   minimumVersion?: string;
+  requireLatestVersion?: boolean;
   contentVersion?: string;
   appStoreUrl?: string;
   message?: string;
@@ -50,7 +51,9 @@ export function useVersionGate() {
       try {
         const response = await fetch(`${VERSION_URL}?t=${Date.now()}`);
         const manifest = (await response.json()) as VersionManifest;
-        const required = manifest.minimumVersion || manifest.latestVersion;
+        const required = manifest.requireLatestVersion
+          ? manifest.latestVersion
+          : manifest.minimumVersion || manifest.latestVersion;
         if (alive && required && compareVersions(APP_VERSION, required) < 0) {
           setGate({ required: true, manifest });
         } else if (
